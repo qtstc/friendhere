@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/search"
+    <item android:id="@+id/action_event_search"
           android:title="@string/action_search"
           android:icon="@drawable/ic_search"
           android:showAsAction="collapseActionView|ifRoom"
           android:actionViewClass="android.widget.SearchView" />
+    
+    <item android:id="@+id/action_new_event"
+          android:title="@string/action_new_event"
+          android:icon="@drawable/ic_content_new"
+          android:showAsAction="collapseActionView|ifRoom"/>
+    
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"

@@ -1,7 +1,15 @@
-package com.tao.finder;
+package com.tao.finder.ui;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshListView;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
 import com.parse.Parse;
 import com.parse.ParseObject;
+import com.tao.finder.R;
+import com.tao.finder.logic.EventSuggestionProvider;
 
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
@@ -12,6 +20,7 @@ import android.content.Intent;
 import android.view.Menu;
 import android.view.Window;
 import android.widget.SearchView;
+import android.widget.SimpleAdapter;
 
 public class EventListActivity extends Activity {
 
@@ -30,6 +39,30 @@ public class EventListActivity extends Activity {
 		
 		setContentView(R.layout.activity_event_list);
 		setProgressBarIndeterminateVisibility(true);
+		
+		PullToRefreshListView eventList = (PullToRefreshListView)findViewById(R.id.event_list);
+		eventList.setOnRefreshListener(new OnRefreshListener() {
+
+			@Override
+			public void onRefresh(PullToRefreshBase refreshView) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		String[] from = new String[]{"event_item_upper_text","event_item_lower_text"};
+		int[] to = new int[]{R.id.event_item_upper_text,R.id.event_item_lower_text};
+		
+		ArrayList<HashMap<String,String>> mapList = new ArrayList<HashMap<String,String>>();
+		for(int i = 0;i<10;i++)
+		{
+			HashMap<String, String> map = new HashMap<String, String>();
+			map.put(from[0],i+"upper");
+			map.put(from[1],i+"lower");
+			mapList.add(map);
+		}
+		
+		SimpleAdapter eventListAdapter = new SimpleAdapter(this, mapList, R.layout.event_list_item, from, to);
+		eventList.setAdapter(eventListAdapter);
 	}
 
 	@Override

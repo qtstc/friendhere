@@ -1,4 +1,4 @@
-package com.tao.finder;
+package com.tao.finder.logic;
 
 import android.content.SearchRecentSuggestionsProvider;
 

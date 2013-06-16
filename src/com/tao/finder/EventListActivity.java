@@ -10,6 +10,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.view.Menu;
+import android.view.Window;
 import android.widget.SearchView;
 
 public class EventListActivity extends Activity {
@@ -18,12 +19,17 @@ public class EventListActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		handleIntent(getIntent());
+		
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		
 		Parse.initialize(this, "t2zKB0ekNi8wWLoAmfc2usjmV03kAAygt4tzI0Dx",
 				"ks4ddRM4qaCOGl4ZPLN0xxFD3AiaZ6Vj2elbFwmP");
-		setContentView(R.layout.activity_event_list);
 		ParseObject testObject = new ParseObject("TestObject");
 		testObject.put("foo", "bar");
 		testObject.saveInBackground();
+		
+		setContentView(R.layout.activity_event_list);
+		setProgressBarIndeterminateVisibility(true);
 	}
 
 	@Override

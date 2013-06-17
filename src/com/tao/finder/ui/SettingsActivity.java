@@ -2,6 +2,7 @@ package com.tao.finder.ui;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -16,9 +17,15 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.util.List;
 
+import com.parse.LogInCallback;
+import com.parse.ParseException;
+import com.parse.ParseFacebookUtils;
+import com.parse.ParseTwitterUtils;
+import com.parse.ParseUser;
 import com.tao.finder.R;
 import com.tao.finder.R.string;
 import com.tao.finder.R.xml;

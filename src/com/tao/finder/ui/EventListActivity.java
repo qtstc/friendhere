@@ -1,12 +1,12 @@
 package com.tao.finder.ui;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.handmark.pulltorefresh.library.PullToRefreshBase;
-import com.handmark.pulltorefresh.library.PullToRefreshListView;
-import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
 import com.parse.Parse;
+import com.parse.ParseFacebookUtils;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.tao.finder.R;
@@ -20,9 +20,16 @@ import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.Signature;
+import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
+import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SimpleAdapter;
 
@@ -34,23 +41,35 @@ public class EventListActivity extends Activity {
 		handleIntent(getIntent());
 		
 		Parse.initialize(this, ParseContract.APPLICATION_ID,ParseContract.CLIENT_KEY);
+		ParseFacebookUtils.initialize(this.getString(R.string.app_id));
 		
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_event_list);
 		//setProgressBarIndeterminateVisibility(true);
 	}
 
+	/**
+	 * Method to be used to get the keyhash used by Facebook.
+	 * It needs to be put in onCreate().
+	 */
+	public void getKeyHash()
+	{
+		try {
+		    PackageInfo info = getPackageManager().getPackageInfo(
+		          "com.tao.finder", PackageManager.GET_SIGNATURES);
+		    for (Signature signature : info.signatures) 
+		        {
+		           MessageDigest md = MessageDigest.getInstance("SHA");
+		           md.update(signature.toByteArray());
+		           Log.e("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+		        }
+		    } catch (NameNotFoundException e) {Log.e("ee",e.toString());
+		} catch (NoSuchAlgorithmException e1) {Log.e("ee",e1.toString());}
+	}
 	
 	public Events loadEvents()
 	{
-		PullToRefreshListView eventList = (PullToRefreshListView)findViewById(R.id.event_list);
-		eventList.setOnRefreshListener(new OnRefreshListener() {
-
-			@Override
-			public void onRefresh(PullToRefreshBase refreshView) {
-				// load data here.
-			}
-		});
+		ListView eventList = (ListView)findViewById(R.id.event_list);
 		String[] from = new String[]{"event_item_upper_text","event_item_lower_text"};
 		int[] to = new int[]{R.id.event_item_upper_text,R.id.event_item_lower_text};
 		
@@ -65,8 +84,6 @@ public class EventListActivity extends Activity {
 		
 		SimpleAdapter eventListAdapter = new SimpleAdapter(this, mapList, R.layout.event_list_item, from, to);
 		eventList.setAdapter(eventListAdapter);
-		
-		eventList.onRefreshComplete();
 		return null;
 	}
 	
@@ -95,7 +112,7 @@ public class EventListActivity extends Activity {
 			startActivity(new Intent(this,NewEventActivity.class));
 			break;
 		case R.id.action_settings:
-			startActivity(new Intent(this,SettingsActivity.class));
+			startActivity(new Intent(this,LoginActivity.class));
 			break;
 		default:
 		}

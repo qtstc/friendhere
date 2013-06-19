@@ -17,9 +17,9 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.tao.finder.R;
 import com.tao.finder.logic.EventAdapter;
-import com.tao.finder.logic.EventSuggestionProvider;
 import com.tao.finder.logic.Events;
 import com.tao.finder.logic.ParseContract;
+import com.tao.finder.logic.SuggestionProvider;
 
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
@@ -35,7 +35,10 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SimpleAdapter;
@@ -60,6 +63,12 @@ public class EventListActivity extends Activity {
 		setContentView(R.layout.activity_event_list);
 		//setProgressBarIndeterminateVisibility(true);
 		
+		initializeList();
+		handleIntent(getIntent());
+	}
+	
+	public void initializeList()
+	{
 		resultSkip = 0;
 		resultLimit = 1;
 		searchString = "";
@@ -86,7 +95,18 @@ public class EventListActivity extends Activity {
 				});
 			}
 		});
-		handleIntent(getIntent());
+		
+		eventList.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position,
+					long id) {
+				ParseObject event = (ParseObject)parent.getAdapter().getItem(position);
+				Intent eventIntent = new Intent(EventListActivity.this,EventActivity.class);
+				eventIntent.putExtra(EventActivity.OBJECT_ID, event.getObjectId());
+				startActivity(eventIntent);
+			}
+		});
 	}
 
 	/**
@@ -106,26 +126,6 @@ public class EventListActivity extends Activity {
 		        }
 		    } catch (NameNotFoundException e) {Log.e("ee",e.toString());
 		} catch (NoSuchAlgorithmException e1) {Log.e("ee",e1.toString());}
-	}
-	
-	public Events loadEvents()
-	{
-		ListView eventList = (ListView)findViewById(R.id.event_list);
-		String[] from = new String[]{"event_item_upper_text","event_item_lower_text"};
-		int[] to = new int[]{R.id.event_item_upper_text,R.id.event_item_lower_text};
-		
-		ArrayList<HashMap<String,String>> mapList = new ArrayList<HashMap<String,String>>();
-		for(int i = 0;i<10;i++)
-		{
-			HashMap<String, String> map = new HashMap<String, String>();
-			map.put(from[0],i+"upper");
-			map.put(from[1],i+"lower");
-			mapList.add(map);
-		}
-		
-		SimpleAdapter eventListAdapter = new SimpleAdapter(this, mapList, R.layout.event_list_item, from, to);
-		eventList.setAdapter(eventListAdapter);
-		return null;
 	}
 	
 	@Override
@@ -175,7 +175,6 @@ public class EventListActivity extends Activity {
 	 *            the intent sent to this activity.
 	 */
 	private void handleIntent(Intent intent) {
-
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
 			searchString = intent.getStringExtra(SearchManager.QUERY).trim();
 			// use the query to search data
@@ -199,7 +198,7 @@ public class EventListActivity extends Activity {
 			
 			//Adds the current search to the search history.
 			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
-		                EventSuggestionProvider.AUTHORITY, EventSuggestionProvider.MODE);
+		               SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
 			suggestions.saveRecentQuery(searchString, null);
 		}
 	}
@@ -210,7 +209,7 @@ public class EventListActivity extends Activity {
 	private void clearSearchHistory()
 	{
 		SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
-                EventSuggestionProvider.AUTHORITY, EventSuggestionProvider.MODE);
+                SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
 		suggestions.clearHistory();
 	}
 

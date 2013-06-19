@@ -1,32 +1,54 @@
 package com.tao.finder.ui;
 
+import java.util.List;
 import java.util.Locale;
 
+import com.parse.FindCallback;
+import com.parse.GetCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.tao.finder.R;
 import com.tao.finder.R.id;
 import com.tao.finder.R.layout;
 import com.tao.finder.R.menu;
 import com.tao.finder.R.string;
+import com.tao.finder.logic.EventAdapter;
+import com.tao.finder.logic.ParseContract;
+import com.tao.finder.logic.SuggestionProvider;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
+import android.app.SearchManager;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.NavUtils;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class EventActivity extends FragmentActivity implements
 		ActionBar.TabListener {
+
+	public static final String OBJECT_ID = "object_id";
+	ParseObject event;
+	ParseObject checkin;
+	String searchString;
+	int resultLimit;
+	int resultSkip;
 
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -82,13 +104,32 @@ public class EventActivity extends FragmentActivity implements
 					.setText(mSectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
+
+		handleIntent(getIntent());
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.event, menu);
+		// Associate searchable configuration with the SearchView
+		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+		SearchView searchView = (SearchView) menu.findItem(
+				R.id.action_person_search).getActionView();
+		searchView.setSearchableInfo(searchManager
+				.getSearchableInfo(getComponentName()));
 		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.action_checkin:
+
+			break;
+		default:
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	@Override
@@ -133,8 +174,8 @@ public class EventActivity extends FragmentActivity implements
 
 		@Override
 		public int getCount() {
-			// Show 3 total pages.
-			return 3;
+			// Show 2 total pages.
+			return 2;
 		}
 
 		@Override
@@ -142,14 +183,20 @@ public class EventActivity extends FragmentActivity implements
 			Locale l = Locale.getDefault();
 			switch (position) {
 			case 0:
-				return getString(R.string.title_section1).toUpperCase(l);
+				return getString(R.string.event_info).toUpperCase(l);
 			case 1:
-				return getString(R.string.title_section2).toUpperCase(l);
-			case 2:
-				return getString(R.string.title_section3).toUpperCase(l);
+				return getString(R.string.event_people).toUpperCase(l);
 			}
 			return null;
 		}
+	}
+
+	public static class PeopleListSectionFragment extends Fragment {
+
+		public PeopleListSectionFragment() {
+
+		}
+
 	}
 
 	/**
@@ -176,6 +223,59 @@ public class EventActivity extends FragmentActivity implements
 			dummyTextView.setText(Integer.toString(getArguments().getInt(
 					ARG_SECTION_NUMBER)));
 			return rootView;
+		}
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		handleIntent(intent);
+	}
+
+	/**
+	 * Handles intents used to invoke this activity. If the intent contains an
+	 * object_id for event, load the event info from the server. If the intent
+	 * contains a search action, this method starts the search.
+	 * 
+	 * @param intent
+	 *            the intent sent to this activity.
+	 */
+	private void handleIntent(Intent intent) {
+		String objectId = intent.getStringExtra(OBJECT_ID);
+		// If the intent is sent from EventListActivity with an object id.
+		if (objectId != null) {
+			Log.e("objectId is not null", objectId);
+			ParseContract.Event.getEventFromId(objectId,
+					new GetCallback<ParseObject>() {
+
+						@Override
+						public void done(ParseObject object, ParseException e) {
+							event = object;
+							setTitle(event.getString(ParseContract.Event.NAME));
+						}
+					});
+			return;
+		}
+
+		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+			searchString = intent.getStringExtra(SearchManager.QUERY).trim();
+			// use the query to search data
+			setProgressBarIndeterminateVisibility(true);
+			ParseContract.Event.searchEvent(searchString, resultLimit,
+					resultSkip, new FindCallback<ParseObject>() {
+
+						@Override
+						public void done(List<ParseObject> objects,
+								ParseException e) {
+							Toast.makeText(EventActivity.this, searchString,
+									Toast.LENGTH_LONG).show();
+							setProgressBarIndeterminateVisibility(false);
+						}
+					});
+
+			// Adds the current search to the search history.
+			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(
+					this, SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
+			suggestions.saveRecentQuery(searchString, null);
 		}
 	}
 

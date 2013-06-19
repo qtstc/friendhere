@@ -129,11 +129,11 @@ public class NewEventActivity extends FragmentActivity {
 			Locale l = Locale.getDefault();
 			switch (position) {
 			case 0:
-				return getString(R.string.title_section1).toUpperCase(l);
+				return "Hoho";
 			case 1:
-				return getString(R.string.title_section2).toUpperCase(l);
+				return "Haha";
 			case 2:
-				return getString(R.string.title_section3).toUpperCase(l);
+				return "Hehe";
 			}
 			return null;
 		}

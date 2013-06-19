@@ -6,7 +6,11 @@ import java.util.List;
 import android.location.Location;
 import android.widget.TableLayout;
 
+import com.parse.DeleteCallback;
 import com.parse.FindCallback;
+import com.parse.FindCallback;
+import com.parse.GetCallback;
+import com.parse.GetCallback;
 import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
@@ -14,16 +18,17 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
+import com.parse.SaveCallback;
 
 public class ParseContract {
-	public static final String APPLICATION_ID = "t2zKB0ekNi8wWLoAmfc2usjmV03kAAygt4tzI0Dx";
-	public static final String CLIENT_KEY = "ks4ddRM4qaCOGl4ZPLN0xxFD3AiaZ6Vj2elbFwmP";
+	public final static String APPLICATION_ID = "t2zKB0ekNi8wWLoAmfc2usjmV03kAAygt4tzI0Dx";
+	public final static String CLIENT_KEY = "ks4ddRM4qaCOGl4ZPLN0xxFD3AiaZ6Vj2elbFwmP";
 	
 	public static class User
 	{
-		public static final String NAME = "name";
-		public static final String PHONE = "phone";
-		public static final String LOCATION = "location";
+		public final static String NAME = "name";
+		public final static String PHONE = "phone";
+		public final static String LOCATION = "location";
 		
 		public static boolean isLoggedIn()
 		{
@@ -35,17 +40,17 @@ public class ParseContract {
 	
 	public static class Event
 	{
-		public static final String TABLE_NAME = "events";
-		public static final String NAME = "name";
-		public static final String LOCATION = "location";
-		public static final String RADIUS = "radius";
-		public static final String STARTING_TIME = "starting_time";
-		public static final String ENDING_TIME = "ending_time";
-		public static final String DESCRIPTION = "description";
-		public static final String CREATOR = "creator";
+		public final static String TABLE_NAME = "events";
+		public final static String NAME = "name";
+		public final static String LOCATION = "location";
+		public final static String RADIUS = "radius";
+		public final static String STARTING_TIME = "starting_time";
+		public final static String ENDING_TIME = "ending_time";
+		public final static String DESCRIPTION = "description";
+		public final static String CREATOR = "creator";
 		
 		
-		public static void createEvent(ParseUser user, String name, Date startingTime, Date endingTime, double longitude, double latitude, int radius,String description, SaveCallback callBack)
+		public static void createEvent(ParseUser user, String name, Date startingTime, Date endingTime, double longitude, double latitude, int radius,String description, SaveCallback callback)
 		{
 			ParseObject event = new ParseObject(TABLE_NAME);
 			event.put(NAME, name);
@@ -55,21 +60,50 @@ public class ParseContract {
 			event.put(ENDING_TIME,endingTime);
 			event.put(CREATOR, user);
 			event.put(DESCRIPTION, description);
-			event.saveInBackground(callBack);
+			event.saveInBackground(callback);
 		}
 		
-		public static void searchEvent(String searchString, int resultNumber,int skip,FindCallback callBack)
+		public static void searchEvent(String searchString, int resultNumber,int skip,FindCallback callback)
 		{
 			ParseQuery<ParseObject> query = ParseQuery.getQuery(TABLE_NAME);
 			//TODO: now the search is case sensitive, change it.
-			query.whereContains(NAME, searchString);
 			query.setLimit(resultNumber);
 			query.setSkip(skip);
-			query.findInBackground(callBack);
+			query.whereContains(NAME, searchString).findInBackground(callback);
+		}
+		
+		public static void getEventFromId(String objectId, GetCallback<ParseObject> callback)
+		{
+			ParseQuery<ParseObject> query = ParseQuery.getQuery(TABLE_NAME);
+			query.getInBackground(objectId, callback);
 		}
 	}
 	
-
+	public static class Checkin
+	{
+		public final static String TABLE_NAME = "check_in";
+		public final static String USER ="user";
+		public final static String EVENT = "event";
+		
+		public static void checkIn(ParseUser user, ParseObject event,SaveCallback callback )
+		{
+			ParseObject checkin = new ParseObject(TABLE_NAME);
+			event.put(USER,user);
+			event.put(EVENT,event);
+			checkin.saveInBackground(callback);
+		}
+		
+		public static void checkOut(ParseObject checkin,DeleteCallback callback)
+		{
+			checkin.deleteInBackground(callback);
+		}
+		
+		public static void getCheckin(ParseUser user, ParseObject event,FindCallback<ParseObject> callback)
+		{
+			ParseQuery<ParseObject> query = ParseQuery.getQuery(TABLE_NAME);
+			query.whereEqualTo(USER, user).whereEqualTo(EVENT, event).findInBackground(callback);
+		}
+	}
 	
 	
 }

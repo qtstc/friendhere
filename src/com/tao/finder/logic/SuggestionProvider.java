@@ -7,11 +7,11 @@ import android.content.SearchRecentSuggestionsProvider;
  * @author Tao Qian
  *
  */
-public class EventSuggestionProvider extends SearchRecentSuggestionsProvider {
-	 public final static String AUTHORITY = "com.tao.finder.EventSuggestionProvider";
+public class SuggestionProvider extends SearchRecentSuggestionsProvider {
+	 public final static String AUTHORITY = "com.tao.finder.logic.SuggestionProvider";
 	    public final static int MODE = DATABASE_MODE_QUERIES;
 
-	    public EventSuggestionProvider() {
+	    public SuggestionProvider() {
 	        setupSuggestions(AUTHORITY, MODE);
 	    }
 }

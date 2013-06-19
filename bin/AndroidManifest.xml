@@ -22,8 +22,8 @@
             android:value="@string/app_id" />
 
         <provider
-            android:name="com.tao.finder.logic.EventSuggestionProvider"
-            android:authorities="com.tao.finder.EventSuggestionProvider" />
+            android:name="com.tao.finder.logic.SuggestionProvider"
+            android:authorities="com.tao.finder.logic.SuggestionProvider" />
 
         <activity
             android:name="com.tao.finder.ui.EventListActivity"
@@ -31,7 +31,7 @@
             android:launchMode="singleTop" >
             <meta-data
                 android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
+                android:resource="@xml/event_searchable" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -42,7 +42,15 @@
         </activity>
         <activity
             android:name="com.tao.finder.ui.EventActivity"
-            android:label="@string/title_activity_event" >
+            android:label="@string/title_activity_event"
+            android:launchMode="singleTop" >
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/person_searchable" />
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
         </activity>
         <activity
             android:name="com.tao.finder.ui.SettingsActivity"

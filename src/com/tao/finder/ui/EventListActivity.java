@@ -4,12 +4,19 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
+import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
+import com.handmark.pulltorefresh.library.PullToRefreshListView;
+import com.parse.FindCallback;
 import com.parse.Parse;
+import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.tao.finder.R;
+import com.tao.finder.logic.EventAdapter;
 import com.tao.finder.logic.EventSuggestionProvider;
 import com.tao.finder.logic.Events;
 import com.tao.finder.logic.ParseContract;
@@ -32,13 +39,19 @@ import android.view.Window;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 public class EventListActivity extends Activity {
 
+	private PullToRefreshListView eventList;
+	private EventAdapter eventAdapter;
+	private int resultLimit;
+	private int resultSkip;
+	private String searchString;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		handleIntent(getIntent());
 		
 		Parse.initialize(this, ParseContract.APPLICATION_ID,ParseContract.CLIENT_KEY);
 		ParseFacebookUtils.initialize(this.getString(R.string.app_id));
@@ -46,6 +59,34 @@ public class EventListActivity extends Activity {
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_event_list);
 		//setProgressBarIndeterminateVisibility(true);
+		
+		resultSkip = 0;
+		resultLimit = 1;
+		searchString = "";
+		eventAdapter = null;
+		eventList = (PullToRefreshListView)EventListActivity.this.findViewById(R.id.event_list);
+		eventList.setOnRefreshListener(new OnRefreshListener<ListView>() {
+
+			@Override
+			public void onRefresh(PullToRefreshBase<ListView> refreshView) {
+				// TODO Auto-generated method stub
+				if(resultSkip == 0)
+				{
+					eventList.onRefreshComplete();
+					return;
+				}
+				ParseContract.Event.searchEvent(searchString, resultLimit, resultSkip, new FindCallback<ParseObject>() {
+
+					@Override
+					public void done(List<ParseObject> objects, ParseException e) {
+						resultSkip += objects.size();
+						eventAdapter.addEvents(objects);
+						eventList.onRefreshComplete();
+					}
+				});
+			}
+		});
+		handleIntent(getIntent());
 	}
 
 	/**
@@ -136,14 +177,30 @@ public class EventListActivity extends Activity {
 	private void handleIntent(Intent intent) {
 
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-			String query = intent.getStringExtra(SearchManager.QUERY);
-			// use the query to search your data somehow
-			// Toast.makeText(this, query, Toast.LENGTH_SHORT).show();
+			searchString = intent.getStringExtra(SearchManager.QUERY).trim();
+			// use the query to search data
+			setProgressBarIndeterminateVisibility(true);
+			ParseContract.Event.searchEvent(searchString, resultLimit, resultSkip, new FindCallback<ParseObject>() {
+
+				@Override
+				public void done(List<ParseObject> objects, ParseException e) {
+//					String text = ""+objects.size();
+//					if(objects.size() >0)
+//					{
+//						text += objects.get(0).getString(ParseContract.Event.DESCRIPTION);
+//					}
+//					Toast.makeText(EventListActivity.this, text, Toast.LENGTH_LONG).show();
+					resultSkip += objects.size();
+					eventAdapter = new EventAdapter(EventListActivity.this,objects);
+					eventList.setAdapter(eventAdapter);
+					setProgressBarIndeterminateVisibility(false);
+				}
+			});
 			
 			//Adds the current search to the search history.
 			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
 		                EventSuggestionProvider.AUTHORITY, EventSuggestionProvider.MODE);
-			suggestions.saveRecentQuery(query, null);
+			suggestions.saveRecentQuery(searchString, null);
 		}
 	}
 	

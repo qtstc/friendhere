@@ -15,6 +15,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_login">Login</string>
     <string name="login">log in</string>
-    <string name="logout">log out</string>    
+    <string name="logout">log out</string>  
+    <string name ="action_create_event">Create event</string>  
 
 </resources>

@@ -1,13 +1,20 @@
 package com.tao.finder.ui;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
+import com.parse.ParseException;
+import com.parse.ParseUser;
+import com.parse.SaveCallback;
 import com.tao.finder.R;
 import com.tao.finder.R.id;
 import com.tao.finder.R.layout;
 import com.tao.finder.R.menu;
 import com.tao.finder.R.string;
+import com.tao.finder.logic.ParseContract;
 
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -21,6 +28,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.TextView;
 
 public class NewEventActivity extends FragmentActivity {
@@ -39,10 +47,35 @@ public class NewEventActivity extends FragmentActivity {
 	 * The {@link ViewPager} that will host the section contents.
 	 */
 	ViewPager mViewPager;
+	
+	
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId())
+		{
+		case R.id.action_create_event:
+			setProgressBarIndeterminateVisibility(true);
+			ParseContract.Event.createEvent(ParseUser.getCurrentUser(), "TestEvent2", new Date(1000), new Date(10000), 12,13, 10,"Just for testing", new SaveCallback() {
+				
+				@Override
+				public void done(ParseException e) {
+					// TODO Auto-generated method stub
+					setProgressBarIndeterminateVisibility(false);
+				}
+			});
+			break;
+			default:
+				
+		}
+		
+		return super.onOptionsItemSelected(item);
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_new_event);
 
 		// Create the adapter that will return a fragment for each of the three

@@ -137,7 +137,7 @@ int id com_facebook_usersettingsfragment_profile_name 0x7f060026
 int id disabled 0x7f060000
 int id event_item_lower_text 0x7f060029
 int id event_item_upper_text 0x7f060028
-int id event_list 0x7f060010
+int id event_list_layout 0x7f060010
 int id fl_inner 0x7f06002f
 int id flip 0x7f060008
 int id gridview 0x7f060009

@@ -95,12 +95,13 @@ public class ParseContract {
 		public final static String USER ="user";
 		public final static String EVENT = "event";
 		
-		public static void checkIn(ParseUser user, ParseObject event,SaveCallback callback )
+		public static ParseObject checkIn(ParseUser user, ParseObject event,SaveCallback callback )
 		{
 			ParseObject checkin = new ParseObject(TABLE_NAME);
-			event.put(USER,user);
-			event.put(EVENT,event);
+			checkin.put(USER,user);
+			checkin.put(EVENT,event);
 			checkin.saveInBackground(callback);
+			return checkin;
 		}
 		
 		public static void checkOut(ParseObject checkin,DeleteCallback callback)

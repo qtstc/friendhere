@@ -1,20 +1,19 @@
 package com.tao.finder.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
-import com.handmark.pulltorefresh.library.PullToRefreshListView;
+import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 import com.tao.finder.R;
 import com.tao.finder.logic.ParseContract;
-import com.tao.finder.logic.PersonAdapter;
 import com.tao.finder.logic.SuggestionProvider;
+import com.tao.finder.ui.SearchResultFragment.OnSearchListener;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
@@ -27,30 +26,23 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.NavUtils;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
+import android.view.Window;
 import android.widget.SearchView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class EventActivity extends FragmentActivity implements
-		ActionBar.TabListener {
+		ActionBar.TabListener,OnSearchListener {
 
 	public static final String OBJECT_ID = "object_id";
 	ParseObject event;
 	ParseObject checkin;
-	String searchString;
-	int resultLimit;
-	int resultSkip;
 
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -70,51 +62,60 @@ public class EventActivity extends FragmentActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_event);
-
-		// Set up the action bar.
-		final ActionBar actionBar = getActionBar();
-		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-
-		// Create the adapter that will return a fragment for each of the three
-		// primary sections of the app.
-		mSectionsPagerAdapter = new SectionsPagerAdapter(
-				getSupportFragmentManager());
-
-		// Set up the ViewPager with the sections adapter.
-		mViewPager = (ViewPager) findViewById(R.id.pager);
-		mViewPager.setAdapter(mSectionsPagerAdapter);
-
-		// When swiping between different sections, select the corresponding
-		// tab. We can also use ActionBar.Tab#select() to do this if we have
-		// a reference to the Tab.
-		mViewPager
-				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-					@Override
-					public void onPageSelected(int position) {
-						actionBar.setSelectedNavigationItem(position);
-					}
-				});
-
-		// For each of the sections in the app, add a tab to the action bar.
-		for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
-			// Create a tab with text corresponding to the page title defined by
-			// the adapter. Also specify this Activity object, which implements
-			// the TabListener interface, as the callback (listener) for when
-			// this tab is selected.
-			actionBar.addTab(actionBar.newTab()
-					.setText(mSectionsPagerAdapter.getPageTitle(i))
-					.setTabListener(this));
-		}
-
 		handleIntent(getIntent());
 	}
 
+	public void initializeTabs()
+	{
+		// Set up the action bar.
+				final ActionBar actionBar = getActionBar();
+				actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+				// Create the adapter that will return a fragment for each of the three
+				// primary sections of the app.
+				mSectionsPagerAdapter = new SectionsPagerAdapter(
+						getSupportFragmentManager());
+
+				// Set up the ViewPager with the sections adapter.
+				mViewPager = (ViewPager) findViewById(R.id.pager);
+
+				// When swiping between different sections, select the corresponding
+				// tab. We can also use ActionBar.Tab#select() to do this if we have
+				// a reference to the Tab.
+				mViewPager
+						.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+							@Override
+							public void onPageSelected(int position) {
+								actionBar.setSelectedNavigationItem(position);
+							}
+						});
+
+				// For each of the sections in the app, add a tab to the action bar.
+				for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
+					// Create a tab with text corresponding to the page title defined by
+					// the adapter. Also specify this Activity object, which implements
+					// the TabListener interface, as the callback (listener) for when
+					// this tab is selected.
+					actionBar.addTab(actionBar.newTab()
+							.setText(mSectionsPagerAdapter.getPageTitle(i))
+							.setTabListener(this));
+				}
+				mViewPager.setAdapter(mSectionsPagerAdapter);
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.event, menu);
 		// Associate searchable configuration with the SearchView
+		MenuItem item = menu.findItem(R.id.action_checkin);
+		if(checkin == null)
+			item.setTitle(getString(R.string.action_check_in));
+		else
+			item.setTitle(getString(R.string.action_check_out));
+		
 		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 		SearchView searchView = (SearchView) menu.findItem(
 				R.id.action_person_search).getActionView();
@@ -124,10 +125,34 @@ public class EventActivity extends FragmentActivity implements
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_checkin:
-
+			//TODO:check parseuser
+			setProgressBarIndeterminateVisibility(true);
+			if(checkin == null)
+			{
+				checkin = ParseContract.Checkin.checkIn(ParseUser.getCurrentUser(), event, new SaveCallback() {
+					
+					@Override
+					public void done(ParseException e) {
+						//TODO if exception caught, make checkin null.
+						item.setTitle(getString(R.string.action_check_out));
+						setProgressBarIndeterminateVisibility(false);
+					}
+				});
+				return true;
+			}
+			ParseContract.Checkin.checkOut(checkin, new DeleteCallback() {
+				
+				@Override
+				public void done(ParseException e) {
+					//TODO change the title back otherwise.
+					item.setTitle(getString(R.string.action_check_in));
+					setProgressBarIndeterminateVisibility(false);
+					checkin = null;
+				}
+			});
 			break;
 		default:
 		}
@@ -165,12 +190,21 @@ public class EventActivity extends FragmentActivity implements
 		@Override
 		public Fragment getItem(int position) {
 			// getItem is called to instantiate the fragment for the given page.
-			// Return a DummySectionFragment (defined as a static inner class
-			// below) with the page number as its lone argument.
-			Fragment fragment = new DummySectionFragment();
-			Bundle args = new Bundle();
-			args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
-			fragment.setArguments(args);
+			
+			Fragment fragment = null;
+			switch (position)
+			{
+			case 0:
+				fragment = new DummySectionFragment();
+				Bundle args = new Bundle();
+				args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
+				fragment.setArguments(args);
+				break;
+			case 1:
+				fragment = new PersonSearchFragment();
+				break;
+			default:
+			}
 			return fragment;
 		}
 
@@ -193,44 +227,6 @@ public class EventActivity extends FragmentActivity implements
 		}
 	}
 
-	public static class PeopleListSectionFragment extends Fragment {
-		
-		public PeopleListSectionFragment() {
-			
-		}
-		
-		PullToRefreshListView peopleList;
-		
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) 
-		{
-			View rootView = inflater.inflate(R.layout.fragment_person_list,
-					container, false);
-			peopleList = (PullToRefreshListView)rootView.findViewById(R.id.people_list);
-			peopleList.setAdapter(new PersonAdapter(getActivity(),new ArrayList<ParseUser>()));
-			peopleList.setOnItemClickListener(new OnItemClickListener() {
-
-				@Override
-				public void onItemClick(AdapterView<?> parent, View view, int position,
-						long id){
-					ParseUser person = (ParseUser)parent.getAdapter().getItem(position);
-					Intent eventIntent = new Intent(getActivity(),PersonActivity.class);
-					eventIntent.putExtra(EventActivity.OBJECT_ID, person.getObjectId());
-					startActivity(eventIntent);
-				}
-			});
-			
-			peopleList.setOnRefreshListener(new OnRefreshListener<ListView>() {
-			})
-			return rootView;
-		}
-		
-		public void addPeople(List<ParseUser> newPeople)
-		{
-			
-		}
-	}
 
 	/**
 	 * A dummy fragment representing a section of the app, but that simply
@@ -251,10 +247,6 @@ public class EventActivity extends FragmentActivity implements
 				Bundle savedInstanceState) {
 			View rootView = inflater.inflate(R.layout.fragment_person_list,
 					container, false);
-			TextView dummyTextView = (TextView) rootView
-					.findViewById(R.id.section_label);
-			dummyTextView.setText(Integer.toString(getArguments().getInt(
-					ARG_SECTION_NUMBER)));
 			return rootView;
 		}
 	}
@@ -276,40 +268,57 @@ public class EventActivity extends FragmentActivity implements
 		String objectId = intent.getStringExtra(OBJECT_ID);
 		// If the intent is sent from EventListActivity with an object id.
 		if (objectId != null) {
-			Log.e("objectId is not null", objectId);
 			ParseContract.Event.getEventFromId(objectId,
 					new GetCallback<ParseObject>() {
 
 						@Override
 						public void done(ParseObject object, ParseException e) {
 							event = object;
+							initializeTabs();
 							setTitle(event.getString(ParseContract.Event.NAME));
 						}
 					});
+			if(ParseUser.getCurrentUser() == null)
+			{
+				checkin = null;
+				return;
+			}
+			ParseContract.Checkin.getCheckin(ParseUser.getCurrentUser(), event, new FindCallback<ParseObject>() {
+				
+				@Override
+				public void done(List<ParseObject> objects, ParseException e) {
+					if(objects.size()==0)
+						checkin = null;
+					else
+					{
+						invalidateOptionsMenu();
+						checkin = objects.get(0);
+					}
+				}
+			});
 			return;
 		}
 
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-			searchString = intent.getStringExtra(SearchManager.QUERY).trim();
+			String searchString = intent.getStringExtra(SearchManager.QUERY).trim();
 			// use the query to search data
-			setProgressBarIndeterminateVisibility(true);
-			ParseContract.Event.searchEvent(searchString, resultLimit,
-					resultSkip, new FindCallback<ParseObject>() {
-
-						@Override
-						public void done(List<ParseObject> objects,
-								ParseException e) {
-							Toast.makeText(EventActivity.this, searchString,
-									Toast.LENGTH_LONG).show();
-							setProgressBarIndeterminateVisibility(false);
-						}
-					});
-
+			PersonSearchFragment frag = (PersonSearchFragment)mSectionsPagerAdapter.getItem(1);
+			frag.newSearch(searchString,event.getObjectId());
 			// Adds the current search to the search history.
 			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(
 					this, SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
 			suggestions.saveRecentQuery(searchString, null);
 		}
+	}
+	
+	@Override
+	public void onSearchStarted() {
+		setProgressBarIndeterminateVisibility(true);
+	}
+
+	@Override
+	public void onSearchEnded() {
+		setProgressBarIndeterminateVisibility(false);
 	}
 
 }

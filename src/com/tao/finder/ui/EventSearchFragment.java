@@ -15,33 +15,23 @@ public class EventSearchFragment extends SearchResultFragment {
 
 	public EventSearchFragment() {
 		super();
-		navigationDestination = PersonActivity.class;
-		adapter = new EventAdapter(getActivity(), new ArrayList<ParseObject>());
-	}
-
-	public static EventSearchFragment newInstance(String searchString) {
-		EventSearchFragment fragment = new EventSearchFragment();
-
-		Bundle args = new Bundle();
-		args.putString(ARG_SEARCH_STRING, searchString);
-		fragment.setArguments(args);
-
-		return fragment;
+		navigationDestination = EventActivity.class;
 	}
 
 	@Override
 	protected void search() {
-		getActivity().setProgressBarIndeterminate(true);
+		onSearchListener.onSearchStarted();
+		adapter = new EventAdapter(getActivity(), new ArrayList<ParseObject>());
+		resultList.setAdapter(adapter);
 		ParseContract.Event.searchEvent(searchString, maxResultSize,
 				resultSkip, new FindCallback<ParseObject>() {
 
 					@Override
 					public void done(List<ParseObject> objects, ParseException e) {
-						// TODO Auto-generated method stub
 						resultSkip += objects.size();
 						lastResultSize = objects.size();
 						((EventAdapter) adapter).addEvents(objects);
-						getActivity().setProgressBarIndeterminate(false);
+						onSearchListener.onSearchEnded();
 					}
 				});
 	}

@@ -15,9 +15,13 @@
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_login">Login</string>
     <string name="login">log in</string>
-    <string name="logout">log out</string>  
-    <string name ="action_create_event">Create event</string>  
-    <string name ="action_check_in">check in</string>
-    <string name = "action_check_out">check out</string>
+    <string name="logout">log out</string>
+    <string name="action_create_event">Create event</string>
+    <string name="action_check_in">check in</string>
+    <string name="action_check_out">check out</string>
+    <string name="title_activity_person">Person</string>
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
 
 </resources>

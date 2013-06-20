@@ -1,19 +1,19 @@
 package com.tao.finder.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
+import com.handmark.pulltorefresh.library.PullToRefreshListView;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
+import com.parse.ParseUser;
 import com.tao.finder.R;
-import com.tao.finder.R.id;
-import com.tao.finder.R.layout;
-import com.tao.finder.R.menu;
-import com.tao.finder.R.string;
-import com.tao.finder.logic.EventAdapter;
 import com.tao.finder.logic.ParseContract;
+import com.tao.finder.logic.PersonAdapter;
 import com.tao.finder.logic.SuggestionProvider;
 
 import android.app.ActionBar;
@@ -36,6 +36,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -192,11 +194,42 @@ public class EventActivity extends FragmentActivity implements
 	}
 
 	public static class PeopleListSectionFragment extends Fragment {
-
+		
 		public PeopleListSectionFragment() {
-
+			
 		}
+		
+		PullToRefreshListView peopleList;
+		
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+				Bundle savedInstanceState) 
+		{
+			View rootView = inflater.inflate(R.layout.fragment_person_list,
+					container, false);
+			peopleList = (PullToRefreshListView)rootView.findViewById(R.id.people_list);
+			peopleList.setAdapter(new PersonAdapter(getActivity(),new ArrayList<ParseUser>()));
+			peopleList.setOnItemClickListener(new OnItemClickListener() {
 
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view, int position,
+						long id){
+					ParseUser person = (ParseUser)parent.getAdapter().getItem(position);
+					Intent eventIntent = new Intent(getActivity(),PersonActivity.class);
+					eventIntent.putExtra(EventActivity.OBJECT_ID, person.getObjectId());
+					startActivity(eventIntent);
+				}
+			});
+			
+			peopleList.setOnRefreshListener(new OnRefreshListener<ListView>() {
+			})
+			return rootView;
+		}
+		
+		public void addPeople(List<ParseUser> newPeople)
+		{
+			
+		}
 	}
 
 	/**
@@ -216,7 +249,7 @@ public class EventActivity extends FragmentActivity implements
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_event_dummy,
+			View rootView = inflater.inflate(R.layout.fragment_person_list,
 					container, false);
 			TextView dummyTextView = (TextView) rootView
 					.findViewById(R.id.section_label);

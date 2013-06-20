@@ -65,6 +65,10 @@
             android:name="com.tao.finder.ui.LoginActivity"
             android:label="@string/title_activity_login" >
         </activity>
+        <activity
+            android:name="com.tao.finder.ui.PersonActivity"
+            android:label="@string/title_activity_person" >
+        </activity>
     </application>
 
 </manifest>

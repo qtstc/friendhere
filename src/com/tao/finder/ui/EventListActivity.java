@@ -2,8 +2,6 @@ package com.tao.finder.ui;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
@@ -14,10 +12,8 @@ import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
 import com.parse.ParseObject;
-import com.parse.ParseQuery;
 import com.tao.finder.R;
 import com.tao.finder.logic.EventAdapter;
-import com.tao.finder.logic.Events;
 import com.tao.finder.logic.ParseContract;
 import com.tao.finder.logic.SuggestionProvider;
 

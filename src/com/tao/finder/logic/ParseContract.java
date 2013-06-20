@@ -1,23 +1,15 @@
 package com.tao.finder.logic;
 
 import java.util.Date;
-import java.util.List;
-
-import android.location.Location;
-import android.widget.TableLayout;
 
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
-import com.parse.FindCallback;
 import com.parse.GetCallback;
-import com.parse.GetCallback;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
-import com.parse.SaveCallback;
 import com.parse.SaveCallback;
 
 public class ParseContract {
@@ -35,6 +27,24 @@ public class ParseContract {
 			if(ParseUser.getCurrentUser()==null)
 				return false;
 			return true;
+		}
+		
+		public static void searchPerson(final String searchString,final String eventId, final int resultNumber,final int skip,final FindCallback<ParseUser> callback)
+		{
+			Event.getEventFromId(eventId, new GetCallback<ParseObject>() {
+				
+				@Override
+				public void done(ParseObject object, ParseException e) {
+					ParseQuery<ParseUser> query1 = ParseUser.getQuery();
+					ParseQuery<ParseObject> query2 = ParseQuery.getQuery(Checkin.TABLE_NAME)
+							.whereEqualTo(Checkin.EVENT, eventId);
+					query1.setLimit(resultNumber);
+					query1.setSkip(skip);
+					//TODO: now the search is case sensitive, change it.
+					query1.whereContains(NAME, searchString).whereMatchesKeyInQuery(NAME, Checkin.USER, query2)
+					.findInBackground(callback);
+				}
+			});
 		}
 	}
 	
@@ -63,7 +73,7 @@ public class ParseContract {
 			event.saveInBackground(callback);
 		}
 		
-		public static void searchEvent(String searchString, int resultNumber,int skip,FindCallback callback)
+		public static void searchEvent(String searchString, int resultNumber,int skip,FindCallback<ParseObject> callback)
 		{
 			ParseQuery<ParseObject> query = ParseQuery.getQuery(TABLE_NAME);
 			//TODO: now the search is case sensitive, change it.

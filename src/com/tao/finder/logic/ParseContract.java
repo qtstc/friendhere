@@ -1,7 +1,8 @@
 package com.tao.finder.logic;
 
+import java.util.ArrayList;
 import java.util.Date;
-
+import java.util.List;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
@@ -36,13 +37,23 @@ public class ParseContract {
 				@Override
 				public void done(ParseObject object, ParseException e) {
 					ParseQuery<ParseUser> query1 = ParseUser.getQuery();
-					ParseQuery<ParseObject> query2 = ParseQuery.getQuery(Checkin.TABLE_NAME)
-							.whereEqualTo(Checkin.EVENT, eventId);
-					query1.setLimit(resultNumber);
-					query1.setSkip(skip);
-					//TODO: now the search is case sensitive, change it.
-					query1.whereContains(NAME, searchString).whereMatchesKeyInQuery(NAME, Checkin.USER, query2)
-					.findInBackground(callback);
+					query1.whereContains(NAME, searchString);
+					ParseQuery<ParseObject> query2 = ParseQuery.getQuery(Checkin.TABLE_NAME);
+					query2.setLimit(resultNumber);
+					query2.setSkip(skip);
+					query2.include(Checkin.USER);
+					query2.whereEqualTo(Checkin.EVENT, object)
+					.whereMatchesQuery(Checkin.USER, query1)
+					.findInBackground(new FindCallback<ParseObject>() {
+						
+						@Override
+						public void done(List<ParseObject> objects, ParseException e) {
+							ArrayList<ParseUser> users = new ArrayList<ParseUser>();
+							for(int i = 0;i<objects.size();i++)
+								users.add(objects.get(i).getParseUser(Checkin.USER));
+							ParseObject.fetchAllIfNeededInBackground(users, callback);
+						}
+					});
 				}
 			});
 		}

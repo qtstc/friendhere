@@ -11,13 +11,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.BaseAdapter;
 import android.widget.ListView;
 
 public abstract class SearchResultFragment extends Fragment{
@@ -25,13 +23,14 @@ public abstract class SearchResultFragment extends Fragment{
 	public static final String ARG_SEARCH_STRING = "search_string";
 	private static final String NO_SEARCH = "user_did_not_search_yet";
 	
-	protected PullToRefreshListView resultList;
+	//protected PullToRefreshListView resultList;
 	protected String searchString;
 	protected int maxResultSize;
 	protected int resultSkip;
 	protected int lastResultSize;
+	@SuppressWarnings("rawtypes")
 	protected Class navigationDestination;
-	protected BaseAdapter adapter;
+	//protected BaseAdapter adapter;
 	protected OnSearchListener onSearchListener;
 	
 	public SearchResultFragment()
@@ -42,11 +41,9 @@ public abstract class SearchResultFragment extends Fragment{
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) 
 	{
-		Log.e("called","onCreateView");
 		View rootView = inflater.inflate(R.layout.fragment_search_result_list,
 				container, false);
-		resultList= (PullToRefreshListView)rootView.findViewById(R.id.result_list);
-		
+		final PullToRefreshListView resultList= (PullToRefreshListView)rootView.findViewById(R.id.result_list);
 		resultList.setOnRefreshListener(new OnRefreshListener<ListView>() {
 
 			@Override
@@ -101,7 +98,6 @@ public abstract class SearchResultFragment extends Fragment{
     
     @Override
     public void onAttach(Activity activity) {
-    	Log.e("called","onattach");
         super.onAttach(activity);
         try {
             onSearchListener = (OnSearchListener)activity;

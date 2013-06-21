@@ -67,6 +67,10 @@ public class EventActivity extends FragmentActivity implements
 		handleIntent(getIntent());
 	}
 
+	private String getFragmentTag(int pos){
+	    return "android:switcher:"+R.id.pager+":"+pos;
+	}
+	
 	public void initializeTabs()
 	{
 		// Set up the action bar.
@@ -298,11 +302,11 @@ public class EventActivity extends FragmentActivity implements
 			});
 			return;
 		}
-
+		//initializeTabs();
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
 			String searchString = intent.getStringExtra(SearchManager.QUERY).trim();
 			// use the query to search data
-			PersonSearchFragment frag = (PersonSearchFragment)mSectionsPagerAdapter.getItem(1);
+			PersonSearchFragment frag = (PersonSearchFragment)getSupportFragmentManager().findFragmentByTag(getFragmentTag(1));
 			frag.newSearch(searchString,event.getObjectId());
 			// Adds the current search to the search history.
 			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(

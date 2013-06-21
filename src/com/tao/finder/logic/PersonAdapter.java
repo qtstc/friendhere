@@ -65,6 +65,7 @@ public class PersonAdapter extends BaseAdapter {
 	public void addPeople(List<ParseUser> newPeople)
 	{
 		people.addAll(newPeople);
+		notifyDataSetChanged();
 	}
 	
 	private static class ViewHolder

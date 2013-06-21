@@ -1,11 +1,14 @@
 package com.tao.finder.ui;
 
 
+import java.util.List;
+
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
 import com.parse.ParseObject;
 import com.tao.finder.R;
+import com.tao.finder.logic.SearchListAdapter;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -18,7 +21,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
-public abstract class SearchResultFragment extends Fragment{
+public abstract class SearchListFragment extends Fragment{
 	
 	public static final String ARG_SEARCH_STRING = "search_string";
 	private static final String NO_SEARCH = "user_did_not_search_yet";
@@ -30,10 +33,9 @@ public abstract class SearchResultFragment extends Fragment{
 	protected int lastResultSize;
 	@SuppressWarnings("rawtypes")
 	protected Class navigationDestination;
-	//protected BaseAdapter adapter;
 	protected OnSearchListener onSearchListener;
 	
-	public SearchResultFragment()
+	public SearchListFragment()
 	{
 		initializeParameters();
 	}
@@ -72,19 +74,21 @@ public abstract class SearchResultFragment extends Fragment{
 		return rootView;
 	}
 	
-	public void newSearch(String searchString)
-	{
-		initializeParameters();
-		this.searchString = searchString;
-		search();
-	}
 	
-	private void initializeParameters()
+	protected void initializeParameters()
 	{
 		maxResultSize = 1;
 		resultSkip = 0;
 		lastResultSize = Integer.MAX_VALUE;
 		searchString = NO_SEARCH;
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	protected void addSearchResult(SearchListAdapter adapter, List results)
+	{
+		resultSkip += results.size();
+		lastResultSize = results.size();
+		adapter.addItem(results);
 	}
 	
 	

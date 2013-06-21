@@ -13,11 +13,11 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.tao.finder.R;
-import com.tao.finder.logic.EventAdapter;
+import com.tao.finder.logic.EventSearchAdapter;
 import com.tao.finder.logic.ParseContract;
-import com.tao.finder.logic.PersonAdapter;
+import com.tao.finder.logic.PersonSearchAdapter;
 
-public class PersonSearchFragment extends SearchResultFragment {
+public class PersonSearchFragment extends SearchListFragment {
 	
 	private String eventId;
 	
@@ -29,23 +29,22 @@ public class PersonSearchFragment extends SearchResultFragment {
 	
 	public void newSearch(String searchString,String eventId)
 	{
+		initializeParameters();
 		this.eventId=eventId;
-		newSearch(searchString);
+		this.searchString = searchString;
+		search();
 	}
 	
 	@Override
 	protected void search() {
 		onSearchListener.onSearchStarted();
 		final PullToRefreshListView resultList = ((PullToRefreshListView)getView().findViewById(R.id.result_list));
-		final PersonAdapter adapter = new PersonAdapter(getActivity(), new ArrayList<ParseUser>());
-		Log.e("Size",adapter.getCount()+" ");
+		final PersonSearchAdapter adapter = new PersonSearchAdapter(getActivity(), new ArrayList<ParseUser>());
 		resultList.setAdapter(adapter);
 		ParseContract.User.searchPerson(searchString, eventId, maxResultSize, resultSkip, new FindCallback<ParseUser>() {
 			@Override
 			public void done(List<ParseUser> objects, ParseException e) {
-				resultSkip += objects.size();
-				lastResultSize = objects.size();
-				adapter.addPeople(objects);
+				addSearchResult(adapter, objects);
 				onSearchListener.onSearchEnded();
 			}
 		});
@@ -54,13 +53,11 @@ public class PersonSearchFragment extends SearchResultFragment {
 	@Override
 	protected void loadMoreResult() {
 		final PullToRefreshListView resultList = ((PullToRefreshListView)getView().findViewById(R.id.result_list));
-		final PersonAdapter adapter = (PersonAdapter) ((HeaderViewListAdapter)resultList.getRefreshableView().getAdapter()).getWrappedAdapter();
+		final PersonSearchAdapter adapter = (PersonSearchAdapter) ((HeaderViewListAdapter)resultList.getRefreshableView().getAdapter()).getWrappedAdapter();
 		ParseContract.User.searchPerson(searchString, eventId, maxResultSize, resultSkip, new FindCallback<ParseUser>() {
 			@Override
 			public void done(List<ParseUser> objects, ParseException e) {
-				resultSkip += objects.size();
-				lastResultSize = objects.size();
-				adapter.addPeople(objects);
+				addSearchResult(adapter, objects);
 				resultList.onRefreshComplete();
 			}
 		});

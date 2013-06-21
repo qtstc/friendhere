@@ -7,7 +7,7 @@ import com.parse.ParseFacebookUtils;
 import com.tao.finder.R;
 import com.tao.finder.logic.ParseContract;
 import com.tao.finder.logic.SuggestionProvider;
-import com.tao.finder.ui.SearchResultFragment.OnSearchListener;
+import com.tao.finder.ui.SearchListFragment.OnSearchListener;
 
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;

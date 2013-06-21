@@ -185,11 +185,10 @@ int layout com_facebook_usersettingsfragment 0x7f030011
 int layout event_list_item 0x7f030012
 int layout fragment_new_event_dummy 0x7f030013
 int layout fragment_person_dummy 0x7f030014
-int layout fragment_person_list 0x7f030015
-int layout fragment_search_result_list 0x7f030016
-int layout person_list_item 0x7f030017
-int layout pull_to_refresh_header_horizontal 0x7f030018
-int layout pull_to_refresh_header_vertical 0x7f030019
+int layout fragment_search_result_list 0x7f030015
+int layout person_list_item 0x7f030016
+int layout pull_to_refresh_header_horizontal 0x7f030017
+int layout pull_to_refresh_header_vertical 0x7f030018
 int menu event 0x7f0c0000
 int menu event_list 0x7f0c0001
 int menu login 0x7f0c0002

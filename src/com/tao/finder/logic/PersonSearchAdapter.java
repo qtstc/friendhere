@@ -12,38 +12,18 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-public class PersonAdapter extends BaseAdapter {
+public class PersonSearchAdapter extends SearchListAdapter<ParseUser> {
 
-	private List<ParseUser> people;
-	private Context mContext;
-	
-	public PersonAdapter(Context mContext, List<ParseUser> people)
-	{
-		this.people = people;
-		this.mContext = mContext;
-	}
-	
-	@Override
-	public int getCount() {
-		return people.size();
+	public PersonSearchAdapter(Context mContext, List<ParseUser> listItems) {
+		super(mContext, listItems);
 	}
 
-	@Override
-	public Object getItem(int arg0) {
-		return people.get(arg0);
-	}
-
-	@Override
-	public long getItemId(int arg0){
-		//throw new UnsupportedOperationException("This method is not implemented");
-		return arg0;
-	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View row = convertView;
 		ViewHolder holder;
-		ParseUser item = (ParseUser) getItem(position);
+		ParseUser item = getItem(position);
 		if(row == null)
 		{
 			row = LayoutInflater.from(mContext).inflate(R.layout.person_list_item, parent, false);                
@@ -62,16 +42,10 @@ public class PersonAdapter extends BaseAdapter {
 		return row;
 	}
 	
-	public void addPeople(List<ParseUser> newPeople)
-	{
-		people.addAll(newPeople);
-		notifyDataSetChanged();
-	}
 	
 	private static class ViewHolder
 	{
 		TextView upperText;
 		TextView lowerText;
 	}
-
 }

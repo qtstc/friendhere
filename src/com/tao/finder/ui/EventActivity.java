@@ -13,7 +13,7 @@ import com.parse.SaveCallback;
 import com.tao.finder.R;
 import com.tao.finder.logic.ParseContract;
 import com.tao.finder.logic.SuggestionProvider;
-import com.tao.finder.ui.SearchResultFragment.OnSearchListener;
+import com.tao.finder.ui.SearchListFragment.OnSearchListener;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
@@ -249,9 +249,7 @@ public class EventActivity extends FragmentActivity implements
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_person_list,
-					container, false);
-			return rootView;
+			return null;
 		}
 	}
 

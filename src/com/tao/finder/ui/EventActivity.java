@@ -288,7 +288,7 @@ public class EventActivity extends FragmentActivity implements
     private PendingIntent getPendingIntent()
     {
     	Intent i = new Intent(getApplicationContext(),BackgroundLocationUpdater.class);
-    	return PendingIntent.getBroadcast(getApplicationContext(), 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+    	return PendingIntent.getService(getApplicationContext(), 1, i, PendingIntent.FLAG_UPDATE_CURRENT);
     }
     
     /**

@@ -25,7 +25,7 @@
         <provider
             android:name="com.tao.finder.logic.SuggestionProvider"
             android:authorities="com.tao.finder.logic.SuggestionProvider" />
-		<receiver android:name=".com.tao.finder.logic.BackgroundLocationUpdater"/>
+		<service android:name="com.tao.finder.logic.BackgroundLocationUpdater"/>
         <activity
             android:name="com.tao.finder.ui.EventListActivity"
             android:label="@string/app_name"

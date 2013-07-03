@@ -1,6 +1,5 @@
 package com.tao.finder.ui;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -8,21 +7,14 @@ import com.parse.ParseException;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.tao.finder.R;
-import com.tao.finder.R.id;
-import com.tao.finder.R.layout;
-import com.tao.finder.R.menu;
-import com.tao.finder.R.string;
 import com.tao.finder.logic.ParseContract;
 
-import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.NavUtils;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -47,28 +39,27 @@ public class NewEventActivity extends FragmentActivity {
 	 * The {@link ViewPager} that will host the section contents.
 	 */
 	ViewPager mViewPager;
-	
-	
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch(item.getItemId())
-		{
+		switch (item.getItemId()) {
 		case R.id.action_create_event:
 			setProgressBarIndeterminateVisibility(true);
-			ParseContract.Event.createEvent(ParseUser.getCurrentUser(), "TestEvent2", new Date(1000), new Date(10000), 12,13, 10,"Just for testing", new SaveCallback() {
-				
-				@Override
-				public void done(ParseException e) {
-					// TODO Auto-generated method stub
-					setProgressBarIndeterminateVisibility(false);
-				}
-			});
+			ParseContract.Event.createEvent(ParseUser.getCurrentUser(),
+					"TestEvent2", new Date(1000), new Date(10000), 12, 13, 10,
+					"Just for testing", new SaveCallback() {
+
+						@Override
+						public void done(ParseException e) {
+							// TODO Auto-generated method stub
+							setProgressBarIndeterminateVisibility(false);
+						}
+					});
 			break;
-			default:
-				
+		default:
+
 		}
-		
+
 		return super.onOptionsItemSelected(item);
 	}
 
@@ -126,7 +117,7 @@ public class NewEventActivity extends FragmentActivity {
 
 		@Override
 		public CharSequence getPageTitle(int position) {
-			Locale l = Locale.getDefault();
+			// Locale l = Locale.getDefault();
 			switch (position) {
 			case 0:
 				return "Hoho";

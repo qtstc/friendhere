@@ -4,7 +4,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import com.parse.Parse;
 import com.parse.ParseFacebookUtils;
-import com.parse.ParseUser;
 import com.tao.finder.R;
 import com.tao.finder.logic.ParseContract;
 import com.tao.finder.logic.SuggestionProvider;
@@ -30,52 +29,74 @@ import android.view.MenuItem;
 import android.view.Window;
 import android.widget.SearchView;
 
-public class EventListActivity extends FragmentActivity implements OnSearchListener{
-	
-	private static final String EVENT_SEARCH_FRAGMENT_TAG = "event_search_fragment_tag";
-	
+/**
+ * This Activity display a list of events for the user to search/select. It also
+ * contains navigation to other activities which allow users to view event, add
+ * event, change settings etc.
+ * 
+ * @author Tao Qian(taoqian_2015@depauw.edu)
+ * 
+ */
+public class EventListActivity extends FragmentActivity implements
+		OnSearchListener {
+
+	public final static String TAG = "EventListActivity";
+	private final static String EVENT_SEARCH_FRAGMENT_TAG = "event_search_fragment_tag";
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		Parse.initialize(this, ParseContract.APPLICATION_ID,ParseContract.CLIENT_KEY);
+		// First intialize Parse and Facebook.
+		Parse.initialize(this, ParseContract.APPLICATION_ID,
+				ParseContract.CLIENT_KEY);
 		ParseFacebookUtils.initialize(this.getString(R.string.app_id));
-		
+
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_event_list);
 		setProgressBarIndeterminate(true);
+
 		initializeList();
 		handleIntent(getIntent());
 	}
-	
-	public void initializeList()
-	{
+
+	/**
+	 * This method adds the EventSearchFragment to the activity.
+	 */
+	public void initializeList() {
 		FragmentManager fragmentManager = getSupportFragmentManager();
-		FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+		FragmentTransaction fragmentTransaction = fragmentManager
+				.beginTransaction();
 		EventSearchFragment fragment = new EventSearchFragment();
-		fragmentTransaction.add(R.id.event_list_layout, fragment,EVENT_SEARCH_FRAGMENT_TAG);
+		fragmentTransaction.add(R.id.event_list_layout, fragment,
+				EVENT_SEARCH_FRAGMENT_TAG);
 		fragmentTransaction.commit();
 	}
 
 	/**
-	 * Method to be used to get the keyhash used by Facebook.
-	 * It needs to be put in onCreate().
+	 * Method to be used to get the keyhash used by Facebook. It needs to be put
+	 * in onCreate(). The keyhash changes as the ssh used for packaging
+	 * appliation changes. It needs to be registered on Facebook developer
+	 * console. Only used for debuging.
 	 */
-	public void getKeyHash()
-	{
+	public void getKeyHash() {
 		try {
-		    PackageInfo info = getPackageManager().getPackageInfo(
-		          "com.tao.finder", PackageManager.GET_SIGNATURES);
-		    for (Signature signature : info.signatures) 
-		        {
-		           MessageDigest md = MessageDigest.getInstance("SHA");
-		           md.update(signature.toByteArray());
-		           Log.e("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
-		        }
-		    } catch (NameNotFoundException e) {Log.e("ee",e.toString());
-		} catch (NoSuchAlgorithmException e1) {Log.e("ee",e1.toString());}
+			PackageInfo info = getPackageManager().getPackageInfo(
+					"com.tao.finder", PackageManager.GET_SIGNATURES);
+			for (Signature signature : info.signatures) {
+				MessageDigest md = MessageDigest.getInstance("SHA");
+				md.update(signature.toByteArray());
+				Log.d(TAG,
+						"KeyHash:"
+								+ Base64.encodeToString(md.digest(),
+										Base64.DEFAULT));
+			}
+		} catch (NameNotFoundException e) {
+			Log.e(TAG, "NameNotFoundException" + e.toString());
+		} catch (NoSuchAlgorithmException e1) {
+			Log.e(TAG, "NoSuchAlgorithmException" + e1.toString());
+		}
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -83,8 +104,8 @@ public class EventListActivity extends FragmentActivity implements OnSearchListe
 
 		// Associate searchable configuration with the SearchView
 		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-		SearchView searchView = (SearchView) menu.findItem(R.id.action_event_search)
-				.getActionView();
+		SearchView searchView = (SearchView) menu.findItem(
+				R.id.action_event_search).getActionView();
 		searchView.setSearchableInfo(searchManager
 				.getSearchableInfo(getComponentName()));
 		return true;
@@ -93,20 +114,17 @@ public class EventListActivity extends FragmentActivity implements OnSearchListe
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch(item.getItemId())
-		{
-		case R.id.action_new_event:
-			startActivity(new Intent(this,NewEventActivity.class));
+		switch (item.getItemId()) {
+		case R.id.action_new_event:// Start NewEventActivity.
+			startActivity(new Intent(this, NewEventActivity.class));
 			break;
-		case R.id.action_settings:
-			startActivity(new Intent(this,LoginActivity.class));
+		case R.id.action_settings:// Start LoginAcvity.
+			startActivity(new Intent(this, LoginActivity.class));
 			break;
 		default:
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
-
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -122,24 +140,26 @@ public class EventListActivity extends FragmentActivity implements OnSearchListe
 	 */
 	private void handleIntent(Intent intent) {
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-			String searchString = intent.getStringExtra(SearchManager.QUERY).trim();
+			String searchString = intent.getStringExtra(SearchManager.QUERY)
+					.trim();
 			// use the query to search data
-			EventSearchFragment frag = (EventSearchFragment)getSupportFragmentManager().findFragmentByTag(EVENT_SEARCH_FRAGMENT_TAG);
+			EventSearchFragment frag = (EventSearchFragment) getSupportFragmentManager()
+					.findFragmentByTag(EVENT_SEARCH_FRAGMENT_TAG);
 			frag.newSearch(searchString);
-			//Adds the current search to the search history.
-			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
-		               SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
+			// Adds the current search to the search history.
+			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(
+					this, SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
 			suggestions.saveRecentQuery(searchString, null);
 		}
 	}
-	
+
 	/**
 	 * Clears the search history.
 	 */
-	private void clearSearchHistory()
-	{
+	@SuppressWarnings("unused")
+	private void clearSearchHistory() {
 		SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
-                SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
+				SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
 		suggestions.clearHistory();
 	}
 

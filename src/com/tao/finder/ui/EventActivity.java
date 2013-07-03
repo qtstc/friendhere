@@ -4,11 +4,9 @@ import java.util.List;
 import java.util.Locale;
 
 import com.google.android.gms.location.LocationClient;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
@@ -25,14 +23,12 @@ import com.tao.finder.ui.SearchListFragment.OnSearchListener;
 
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.FragmentTransaction;
 import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.location.Location;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.Fragment;
@@ -48,8 +44,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.SearchView;
-import android.widget.TextView;
 
+/**
+ * This activity allows the user to view details of an event, search users who
+ * are in the same event and check in/out.
+ * 
+ * @author Tao Qian(taoqian_2015@depauw.edu)
+ * 
+ */
 public class EventActivity extends FragmentActivity implements
 		ActionBar.TabListener, OnSearchListener,
 		GooglePlayServicesClient.ConnectionCallbacks,
@@ -197,31 +199,27 @@ public class EventActivity extends FragmentActivity implements
 		mLocationClient.disconnect();
 		super.onStop();
 	}
-	
+
 	/**
-	 * Either start or stop background
-	 * location tracking.
+	 * Either start or stop background location tracking.
 	 */
-	private void changeLocationUpdate()
-	{
-		//If onConnect() is not called yet, return.
-		if(mLocationClient == null)
+	private void changeLocationUpdate() {
+		// If onConnect() is not called yet, return.
+		if (mLocationClient == null)
 			return;
-		if(checkin == null)
-		{
+		if (checkin == null) {
 			mLocationClient.removeLocationUpdates(getPendingIntent());
-			Log.d(TAG,"Removed PendingIntent");
-		}
-		else
-		{
-			mLocationClient.requestLocationUpdates(mLocationRequest,getPendingIntent());
-			Log.d(TAG,"Added PendingIntent");
+			Log.d(TAG, "Removed PendingIntent");
+		} else {
+			mLocationClient.requestLocationUpdates(mLocationRequest,
+					getPendingIntent());
+			Log.d(TAG, "Added PendingIntent");
 		}
 	}
-	
+
 	@Override
 	public void onConnected(Bundle arg0) {
-		Log.d(TAG,"Connected location client");
+		Log.d(TAG, "Connected location client");
 		changeLocationUpdate();
 	}
 
@@ -300,7 +298,7 @@ public class EventActivity extends FragmentActivity implements
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.event, menu);
 
-		// Change the text displayed depending on the settings 
+		// Change the text displayed depending on the settings
 		MenuItem item = menu.findItem(R.id.action_checkin);
 		if (checkin == null)
 			item.setTitle(getString(R.string.action_check_in));
@@ -333,7 +331,8 @@ public class EventActivity extends FragmentActivity implements
 								// TODO if exception caught, make checkin null.
 								item.setTitle(getString(R.string.action_check_out));
 								setProgressBarIndeterminateVisibility(false);
-								mLocationClient.requestLocationUpdates(mLocationRequest, getPendingIntent());
+								mLocationClient.requestLocationUpdates(
+										mLocationRequest, getPendingIntent());
 							}
 						});
 				return true;
@@ -391,7 +390,7 @@ public class EventActivity extends FragmentActivity implements
 
 			Fragment fragment = null;
 			switch (position) {
-			//TODO:Set tab 0 as the EventInfoFragment.
+			// TODO:Set tab 0 as the EventInfoFragment.
 			case 0:
 				fragment = new DummySectionFragment();
 				Bundle args = new Bundle();
@@ -399,7 +398,7 @@ public class EventActivity extends FragmentActivity implements
 						position + 1);
 				fragment.setArguments(args);
 				break;
-			//Set tab 1 as the PersonSearchFragment.
+			// Set tab 1 as the PersonSearchFragment.
 			case 1:
 				fragment = new PersonSearchFragment();
 				break;
@@ -486,9 +485,11 @@ public class EventActivity extends FragmentActivity implements
 								invalidateOptionsMenu();
 								checkin = objects.get(0);
 							}
-							//Only connect after the checkin is initialized because
-							//we need to start/stop background location tracker in onConnecte().
-							//based on the status of checkin.
+							// Only connect after the checkin is initialized
+							// because
+							// we need to start/stop background location tracker
+							// in onConnecte().
+							// based on the status of checkin.
 							mLocationClient.connect();
 						}
 					});
@@ -508,7 +509,7 @@ public class EventActivity extends FragmentActivity implements
 			suggestions.saveRecentQuery(searchString, null);
 		}
 	}
-	
+
 	@Override
 	protected void onNewIntent(Intent intent) {
 		handleIntent(intent);

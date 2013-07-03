@@ -88,11 +88,12 @@ public class LoginActivity extends Activity {
 		} else {
 			loginButton.setText(getString(R.string.logout));
 			loginButton.setOnClickListener(new OnClickListener() {
-				
+
 				@Override
 				public void onClick(View v) {
-					ParseFacebookUtils.getSession().closeAndClearTokenInformation();
-					ParseUser.logOut();	
+					ParseFacebookUtils.getSession()
+							.closeAndClearTokenInformation();
+					ParseUser.logOut();
 				}
 			});
 		}

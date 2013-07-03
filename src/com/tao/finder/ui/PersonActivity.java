@@ -3,11 +3,6 @@ package com.tao.finder.ui;
 import java.util.Locale;
 
 import com.tao.finder.R;
-import com.tao.finder.R.id;
-import com.tao.finder.R.layout;
-import com.tao.finder.R.menu;
-import com.tao.finder.R.string;
-
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
@@ -15,12 +10,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.NavUtils;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;

@@ -51,16 +51,17 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 public class EventActivity extends FragmentActivity implements
-		ActionBar.TabListener,OnSearchListener, GooglePlayServicesClient.ConnectionCallbacks,
-        GooglePlayServicesClient.OnConnectionFailedListener{
+		ActionBar.TabListener, OnSearchListener,
+		GooglePlayServicesClient.ConnectionCallbacks,
+		GooglePlayServicesClient.OnConnectionFailedListener {
 
-	 // A request to connect to Location Services
-    private LocationRequest mLocationRequest;
+	public final static String TAG = "EventActivity";
 
-    // Stores the current instantiation of the location client in this object
-    private LocationClient mLocationClient;
-	
-	
+	// A request to connect to Location Services
+	private LocationRequest mLocationRequest;
+	// Stores the current instantiation of the location client in this object
+	private LocationClient mLocationClient;
+
 	public static final String OBJECT_ID = "object_id";
 	ParseObject event;
 	ParseObject checkin;
@@ -83,275 +84,230 @@ public class EventActivity extends FragmentActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		initializeLocationClient();
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_event);
 		handleIntent(getIntent());
-		initializeLocation();
-	}
-	
-	private void initializeLocation()
-	{
-		 // Create a new global location parameters object
-        mLocationRequest = LocationRequest.create();
-        /*
-         * Set the update interval
-         */
-        mLocationRequest.setInterval(LocationUtils.UPDATE_INTERVAL_IN_MILLISECONDS);
-
-        // Use high accuracy
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        // Set the interval ceiling to one minute
-        mLocationRequest.setFastestInterval(LocationUtils.FAST_INTERVAL_CEILING_IN_MILLISECONDS);
-        /*
-         * Create a new location client, using the enclosing class to
-         * handle callbacks.
-         */
-        mLocationClient = new LocationClient(this, this, this);
 	}
 
-	@Override
-    public void onStop() {
+	/**
+	 * Initialize the location client and location request instance.
+	 */
+	private void initializeLocationClient() {
+		// Create a new global location parameters object
+		mLocationRequest = LocationRequest.create();
+		// Set the update interval
+		mLocationRequest
+				.setInterval(LocationUtils.UPDATE_INTERVAL_IN_MILLISECONDS);
 
-        // If the client is connected
-        if (mLocationClient.isConnected()) {
-            stopPeriodicUpdates();
-        }
+		// Use high accuracy
+		mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        // After disconnect() is called, the client is considered "dead".
-        mLocationClient.disconnect();
+		// Set the interval ceiling to one minute
+		mLocationRequest
+				.setFastestInterval(LocationUtils.FAST_INTERVAL_CEILING_IN_MILLISECONDS);
+		/*
+		 * Create a new location client, using the enclosing class to handle
+		 * callbacks.
+		 */
+		mLocationClient = new LocationClient(this, this, this);
+	}
 
-        super.onStop();
-    }
-	
-	  /*
-     * Called when the Activity is restarted, even before it becomes visible.
-     */
-    @Override
-    public void onStart() {
-
-        super.onStart();
-
-        /*
-         * Connect the client. Don't re-start any requests here;
-         * instead, wait for onResume()
-         */
-        mLocationClient.connect();
-
-    }
-	
 	/*
-     * Handle results returned to this Activity by other Activities started with
-     * startActivityForResult(). In particular, the method onConnectionFailed() in
-     * LocationUpdateRemover and LocationUpdateRequester may call startResolutionForResult() to
-     * start an Activity that handles Google Play services problems. The result of this
-     * call returns here, to onActivityResult.
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+	 * Handle results returned to this Activity by other Activities started with
+	 * startActivityForResult(). In particular, the method onConnectionFailed()
+	 * in LocationUpdateRemover and LocationUpdateRequester may call
+	 * startResolutionForResult() to start an Activity that handles Google Play
+	 * services problems. The result of this call returns here, to
+	 * onActivityResult.
+	 */
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode,
+			Intent intent) {
+		Log.d(TAG, "onActivityResult");
+		// Choose what to do based on the request code
+		switch (requestCode) {
+		// TODO:Inform user with dialog about the failure.
+		// If the request code matches the code sent in onConnectionFailed
+		case LocationUtils.CONNECTION_FAILURE_RESOLUTION_REQUEST:
 
-        // Choose what to do based on the request code
-        switch (requestCode) {
+			switch (resultCode) {
+			// If Google Play services resolved the problem
+			case Activity.RESULT_OK:
 
-            // If the request code matches the code sent in onConnectionFailed
-            case LocationUtils.CONNECTION_FAILURE_RESOLUTION_REQUEST :
+				// Log the result
+				Log.d(TAG, "requestCode:" + getString(R.string.resolved));
+				break;
 
-                switch (resultCode) {
-                    // If Google Play services resolved the problem
-                    case Activity.RESULT_OK:
+			// If any other result was returned by Google Play services
+			default:
+				// Log the result
+				Log.d(TAG, "requestCode:" + getString(R.string.no_resolution));
+				break;
+			}
 
-                        // Log the result
-                        Log.d(LocationUtils.APPTAG, getString(R.string.resolved));
-                    break;
+			// If any other request code was received
+		default:
+			// Report that this Activity received an unknown requestCode
+			Log.d(TAG,
+					"requestCode"
+							+ getString(R.string.unknown_activity_request_code,
+									requestCode));
+			break;
+		}
+	}
 
-                    // If any other result was returned by Google Play services
-                    default:
-                        // Log the result
-                        Log.d(LocationUtils.APPTAG, getString(R.string.no_resolution));
-                    break;
-                }
-
-            // If any other request code was received
-            default:
-               // Report that this Activity received an unknown requestCode
-               Log.d(LocationUtils.APPTAG,
-                       getString(R.string.unknown_activity_request_code, requestCode));
-               break;
-        }
-    }
-    
-    /**
-     * Verify that Google Play services is available before making a request.
-     *
-     * @return true if Google Play services is available, otherwise false
-     */
-    private boolean servicesConnected() {
-
-        // Check that Google Play services is available
-        int resultCode =
-                GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-
-        // If Google Play services is available
-        if (ConnectionResult.SUCCESS == resultCode) {
-            // In debug mode, log the status
-            Log.d(LocationUtils.APPTAG, getString(R.string.play_services_available));
-
-            // Continue
-            return true;
-        // Google Play services was not available for some reason
-        } else {
-//            // Display an error dialog
-//            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0);
-//            if (dialog != null) {
-//                ErrorDialogFragment errorFragment = new ErrorDialogFragment();
-//                errorFragment.setDialog(dialog);
-//                errorFragment.show(getSupportFragmentManager(), LocationUtils.APPTAG);
-//            }
-            return false;
-        }
-    }
-    
-    /**
-     * Invoked by the "Get Location" button.
-     *
-     * Calls getLastLocation() to get the current location
-     *
-     * @param v The view object associated with this method, in this case a Button.
-     */
-    public void getLocation(View v) {
-
-        // If Google Play Services is available
-        if (servicesConnected()) {
-
-            // Get the current location
-            Location currentLocation = mLocationClient.getLastLocation();
-
-            // Display the current location in the UI
-            //mLatLng.setText(LocationUtils.getLatLng(this, currentLocation));
-        }
-    }
-    
 	@Override
 	public void onConnectionFailed(ConnectionResult connectionResult) {
-		  /*
-         * Google Play services can resolve some errors it detects.
-         * If the error has a resolution, try sending an Intent to
-         * start a Google Play services activity that can resolve
-         * error.
-         */
-        if (connectionResult.hasResolution()) {
-            try {
+		// TODO display dialogs
 
-                // Start an Activity that tries to resolve the error
-                connectionResult.startResolutionForResult(
-                        this,
-                        LocationUtils.CONNECTION_FAILURE_RESOLUTION_REQUEST);
+		/*
+		 * Google Play services can resolve some errors it detects. If the error
+		 * has a resolution, try sending an Intent to start a Google Play
+		 * services activity that can resolve error.
+		 */
+		if (connectionResult.hasResolution()) {
+			Log.d(TAG, "onConnectionFailed:has resolution");
+			try {
 
-                /*
-                * Thrown if Google Play services canceled the original
-                * PendingIntent
-                */
+				// Start an Activity that tries to resolve the error
+				connectionResult.startResolutionForResult(this,
+						LocationUtils.CONNECTION_FAILURE_RESOLUTION_REQUEST);
 
-            } catch (IntentSender.SendIntentException e) {
+				/*
+				 * Thrown if Google Play services canceled the original
+				 * PendingIntent
+				 */
 
-                // Log the error
-                e.printStackTrace();
-            }
-        } else {
+			} catch (IntentSender.SendIntentException e) {
 
-            // If no resolution is available, display a dialog to the user with the error.
-            //showErrorDialog(connectionResult.getErrorCode());
-        }
+				// Log the error
+				e.printStackTrace();
+			}
+		} else {
+
+			// If no resolution is available, display a dialog to the user with
+			// the error;
+			Log.d(TAG, "onConnectionFailed:no resolution");
+		}
 	}
 
 	@Override
+	protected void onStop() {
+		mLocationClient.disconnect();
+		super.onStop();
+	}
+	
+	/**
+	 * Either start or stop background
+	 * location tracking.
+	 */
+	private void changeLocationUpdate()
+	{
+		//If onConnect() is not called yet, return.
+		if(mLocationClient == null)
+			return;
+		if(checkin == null)
+		{
+			mLocationClient.removeLocationUpdates(getPendingIntent());
+			Log.d(TAG,"Removed PendingIntent");
+		}
+		else
+		{
+			mLocationClient.requestLocationUpdates(mLocationRequest,getPendingIntent());
+			Log.d(TAG,"Added PendingIntent");
+		}
+	}
+	
+	@Override
 	public void onConnected(Bundle arg0) {
-		startPeriodicUpdates();
+		Log.d(TAG,"Connected location client");
+		changeLocationUpdate();
 	}
 
 	@Override
 	public void onDisconnected() {
-		// TODO Auto-generated method stub
-		
+		Log.d(TAG, "Disconnected location client");
 	}
-    
-    /**
-     * In response to a request to start updates, send a request
-     * to Location Services
-     */
-    private void startPeriodicUpdates() {
-    	Log.e("PendingAgent","started");
-        mLocationClient.requestLocationUpdates(mLocationRequest, getPendingIntent());
-    }
-    
-    
-    private PendingIntent getPendingIntent()
-    {
-    	Intent i = new Intent(getApplicationContext(),BackgroundLocationUpdater.class);
-    	return PendingIntent.getService(getApplicationContext(), 1, i, PendingIntent.FLAG_UPDATE_CURRENT);
-    }
-    
-    /**
-     * In response to a request to stop updates, send a request to
-     * Location Services
-     */
-    private void stopPeriodicUpdates() {
-        mLocationClient.removeLocationUpdates(getPendingIntent());
-    }
-    
-	private String getFragmentTag(int pos){
-	    return "android:switcher:"+R.id.pager+":"+pos;
+
+	/**
+	 * Create and return a pending intent for the BackgroundLocationUpdater
+	 * service.
+	 * 
+	 * @return the service created.
+	 */
+	private PendingIntent getPendingIntent() {
+		Intent i = new Intent(getApplicationContext(),
+				BackgroundLocationUpdater.class);
+		return PendingIntent.getService(getApplicationContext(), 1, i,
+				PendingIntent.FLAG_UPDATE_CURRENT);
 	}
-	
-	public void initializeTabs()
-	{
+
+	/**
+	 * Get the tag used to identify different Fragments. This is necessary
+	 * because identifying fragment by Id w will give NullPointerException.
+	 * 
+	 * @param pos
+	 *            the position of the tab.
+	 * @return the Tag of the fragment.
+	 */
+	private String getFragmentTag(int pos) {
+		return "android:switcher:" + R.id.pager + ":" + pos;
+	}
+
+	/**
+	 * Initialize the tabs used in the page. Mostly auto-generated.
+	 */
+	public void initializeTabs() {
 		// Set up the action bar.
-				final ActionBar actionBar = getActionBar();
-				actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+		final ActionBar actionBar = getActionBar();
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-				// Create the adapter that will return a fragment for each of the three
-				// primary sections of the app.
-				mSectionsPagerAdapter = new SectionsPagerAdapter(
-						getSupportFragmentManager());
+		// Create the adapter that will return a fragment for each of the two
+		// primary sections of the app.
+		mSectionsPagerAdapter = new SectionsPagerAdapter(
+				getSupportFragmentManager());
 
-				// Set up the ViewPager with the sections adapter.
-				mViewPager = (ViewPager) findViewById(R.id.pager);
+		// Set up the ViewPager with the sections adapter.
+		mViewPager = (ViewPager) findViewById(R.id.pager);
 
-				// When swiping between different sections, select the corresponding
-				// tab. We can also use ActionBar.Tab#select() to do this if we have
-				// a reference to the Tab.
-				mViewPager
-						.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-							@Override
-							public void onPageSelected(int position) {
-								actionBar.setSelectedNavigationItem(position);
-							}
-						});
+		// When swiping between different sections, select the corresponding
+		// tab. We can also use ActionBar.Tab#select() to do this if we have
+		// a reference to the Tab.
+		mViewPager
+				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+					@Override
+					public void onPageSelected(int position) {
+						actionBar.setSelectedNavigationItem(position);
+					}
+				});
 
-				// For each of the sections in the app, add a tab to the action bar.
-				for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
-					// Create a tab with text corresponding to the page title defined by
-					// the adapter. Also specify this Activity object, which implements
-					// the TabListener interface, as the callback (listener) for when
-					// this tab is selected.
-					actionBar.addTab(actionBar.newTab()
-							.setText(mSectionsPagerAdapter.getPageTitle(i))
-							.setTabListener(this));
-				}
-				mViewPager.setAdapter(mSectionsPagerAdapter);
+		// For each of the sections in the app, add a tab to the action bar.
+		for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
+			// Create a tab with text corresponding to the page title defined by
+			// the adapter. Also specify this Activity object, which implements
+			// the TabListener interface, as the callback (listener) for when
+			// this tab is selected.
+			actionBar.addTab(actionBar.newTab()
+					.setText(mSectionsPagerAdapter.getPageTitle(i))
+					.setTabListener(this));
+		}
+		mViewPager.setAdapter(mSectionsPagerAdapter);
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.event, menu);
-		// Associate searchable configuration with the SearchView
+
+		// Change the text displayed depending on the settings 
 		MenuItem item = menu.findItem(R.id.action_checkin);
-		if(checkin == null)
+		if (checkin == null)
 			item.setTitle(getString(R.string.action_check_in));
 		else
 			item.setTitle(getString(R.string.action_check_out));
-		
+
+		// Associate searchable configuration with the SearchView
 		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 		SearchView searchView = (SearchView) menu.findItem(
 				R.id.action_person_search).getActionView();
@@ -364,33 +320,35 @@ public class EventActivity extends FragmentActivity implements
 	public boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_checkin:
-			//TODO:check parseuser
+			// TODO:check parseuser
 			setProgressBarIndeterminateVisibility(true);
-			if(checkin == null)
-			{
-				checkin = ParseContract.Checkin.checkIn(ParseUser.getCurrentUser(), event, new SaveCallback() {
-					
-					@Override
-					public void done(ParseException e) {
-						//TODO if exception caught, make checkin null.
-						item.setTitle(getString(R.string.action_check_out));
-						setProgressBarIndeterminateVisibility(false);
-						
-						startPeriodicUpdates();
-					}
-				});
+			// If the user is not checked in, check him in and start the
+			// locationUpdater.
+			if (checkin == null) {
+				checkin = ParseContract.Checkin.checkIn(
+						ParseUser.getCurrentUser(), event, new SaveCallback() {
+
+							@Override
+							public void done(ParseException e) {
+								// TODO if exception caught, make checkin null.
+								item.setTitle(getString(R.string.action_check_out));
+								setProgressBarIndeterminateVisibility(false);
+								mLocationClient.requestLocationUpdates(mLocationRequest, getPendingIntent());
+							}
+						});
 				return true;
 			}
+			// Else if the user is checked in, check him out and terminate the
+			// location updater.
 			ParseContract.Checkin.checkOut(checkin, new DeleteCallback() {
-				
+
 				@Override
 				public void done(ParseException e) {
-					//TODO change the title back otherwise.
+					// TODO change the title back otherwise.
 					item.setTitle(getString(R.string.action_check_in));
 					setProgressBarIndeterminateVisibility(false);
 					checkin = null;
-					
-					stopPeriodicUpdates();
+					mLocationClient.removeLocationUpdates(getPendingIntent());
 				}
 			});
 			break;
@@ -419,7 +377,7 @@ public class EventActivity extends FragmentActivity implements
 
 	/**
 	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-	 * one of the sections/tabs/pages.
+	 * one of the sections/tabs/pages. Mostly auto-generated code.
 	 */
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
@@ -430,16 +388,18 @@ public class EventActivity extends FragmentActivity implements
 		@Override
 		public Fragment getItem(int position) {
 			// getItem is called to instantiate the fragment for the given page.
-			
+
 			Fragment fragment = null;
-			switch (position)
-			{
+			switch (position) {
+			//TODO:Set tab 0 as the EventInfoFragment.
 			case 0:
 				fragment = new DummySectionFragment();
 				Bundle args = new Bundle();
-				args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
+				args.putInt(DummySectionFragment.ARG_SECTION_NUMBER,
+						position + 1);
 				fragment.setArguments(args);
 				break;
+			//Set tab 1 as the PersonSearchFragment.
 			case 1:
 				fragment = new PersonSearchFragment();
 				break;
@@ -467,7 +427,6 @@ public class EventActivity extends FragmentActivity implements
 		}
 	}
 
-
 	/**
 	 * A dummy fragment representing a section of the app, but that simply
 	 * displays dummy text.
@@ -487,11 +446,6 @@ public class EventActivity extends FragmentActivity implements
 				Bundle savedInstanceState) {
 			return null;
 		}
-	}
-
-	@Override
-	protected void onNewIntent(Intent intent) {
-		handleIntent(intent);
 	}
 
 	/**
@@ -516,32 +470,38 @@ public class EventActivity extends FragmentActivity implements
 							setTitle(event.getString(ParseContract.Event.NAME));
 						}
 					});
-			if(ParseUser.getCurrentUser() == null)
-			{
+			if (ParseUser.getCurrentUser() == null) {
 				checkin = null;
 				return;
 			}
-			ParseContract.Checkin.getCheckin(ParseUser.getCurrentUser(), event, new FindCallback<ParseObject>() {
-				
-				@Override
-				public void done(List<ParseObject> objects, ParseException e) {
-					if(objects.size()==0)
-						checkin = null;
-					else
-					{
-						invalidateOptionsMenu();
-						checkin = objects.get(0);
-					}
-				}
-			});
+			ParseContract.Checkin.getCheckin(ParseUser.getCurrentUser(), event,
+					new FindCallback<ParseObject>() {
+
+						@Override
+						public void done(List<ParseObject> objects,
+								ParseException e) {
+							if (objects.size() == 0)
+								checkin = null;
+							else {
+								invalidateOptionsMenu();
+								checkin = objects.get(0);
+							}
+							//Only connect after the checkin is initialized because
+							//we need to start/stop background location tracker in onConnecte().
+							//based on the status of checkin.
+							mLocationClient.connect();
+						}
+					});
 			return;
 		}
-		//initializeTabs();
+		// initializeTabs();
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-			String searchString = intent.getStringExtra(SearchManager.QUERY).trim();
+			String searchString = intent.getStringExtra(SearchManager.QUERY)
+					.trim();
 			// use the query to search data
-			PersonSearchFragment frag = (PersonSearchFragment)getSupportFragmentManager().findFragmentByTag(getFragmentTag(1));
-			frag.newSearch(searchString,event.getObjectId());
+			PersonSearchFragment frag = (PersonSearchFragment) getSupportFragmentManager()
+					.findFragmentByTag(getFragmentTag(1));
+			frag.newSearch(searchString, event.getObjectId());
 			// Adds the current search to the search history.
 			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(
 					this, SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
@@ -549,6 +509,11 @@ public class EventActivity extends FragmentActivity implements
 		}
 	}
 	
+	@Override
+	protected void onNewIntent(Intent intent) {
+		handleIntent(intent);
+	}
+
 	@Override
 	public void onSearchStarted() {
 		setProgressBarIndeterminateVisibility(true);

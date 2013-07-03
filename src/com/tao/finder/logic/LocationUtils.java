@@ -16,10 +16,13 @@
 
 package com.tao.finder.logic;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.tao.finder.R;
 
 import android.content.Context;
 import android.location.Location;
+import android.util.Log;
 
 /**
  * Defines app-wide constants and utilities
@@ -87,6 +90,37 @@ public final class LocationUtils {
 
             // Otherwise, return the empty string
             return EMPTY_STRING;
+        }
+    }
+    
+    /**
+     * Verify that Google Play services is available before making a request.
+     *
+     * @return true if Google Play services is available, otherwise false
+     */
+    public static boolean servicesConnected(Context c){
+        // Check that Google Play services is available
+        int resultCode =
+                GooglePlayServicesUtil.isGooglePlayServicesAvailable(c);
+
+        // If Google Play services is available
+        if (ConnectionResult.SUCCESS == resultCode) {
+            // In debug mode, log the status
+            Log.d(LocationUtils.APPTAG, c.getString(R.string.play_services_available));
+
+            // Continue
+            return true;
+        // Google Play services was not available for some reason
+        } else {
+        	//TODO: display dialog
+//            // Display an error dialog
+//            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0);
+//            if (dialog != null) {
+//                ErrorDialogFragment errorFragment = new ErrorDialogFragment();
+//                errorFragment.setDialog(dialog);
+//                errorFragment.show(getSupportFragmentManager(), LocationUtils.APPTAG);
+//            }
+            return false;
         }
     }
 }

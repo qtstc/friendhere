@@ -4,6 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import com.parse.Parse;
 import com.parse.ParseFacebookUtils;
+import com.parse.ParseUser;
 import com.tao.finder.R;
 import com.tao.finder.logic.ParseContract;
 import com.tao.finder.logic.SuggestionProvider;

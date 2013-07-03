@@ -3,6 +3,9 @@ package com.tao.finder.logic;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import android.location.Location;
+
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
@@ -28,6 +31,17 @@ public class ParseContract {
 			if(ParseUser.getCurrentUser()==null)
 				return false;
 			return true;
+		}
+		
+		public static void updateLocation(ParseUser user, Location l)
+		{
+			user.put(LOCATION, locationToGeoPoint(l));
+			user.saveEventually();
+		}
+		
+		public static ParseGeoPoint locationToGeoPoint(Location l)
+		{
+			return new ParseGeoPoint(l.getLatitude(), l.getLongitude());
 		}
 		
 		public static void searchPerson(final String searchString,final String eventId, final int resultNumber,final int skip,final FindCallback<ParseUser> callback)

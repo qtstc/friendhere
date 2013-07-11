@@ -11,7 +11,10 @@
     <string name="event_info">info</string>
     <string name="event_people">people</string>
     <string name="title_activity_new_event">New</string>
+    
     <string name="app_id">484510971628209</string>
+    <string name = "debug_api_key">AIzaSyCa2N7Mc54UXqrmxrErZpN5gBtJdTMqS30</string>
+    
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_login">Login</string>
     <string name="login">log in</string>

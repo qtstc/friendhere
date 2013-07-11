@@ -57,6 +57,7 @@ public class EventListActivity extends FragmentActivity implements
 
 		initializeList();
 		handleIntent(getIntent());
+		getKeyHash();
 	}
 
 	/**

@@ -1,10 +1,23 @@
 package com.tao.finder.ui;
 
 import java.util.Date;
+import java.util.LinkedList;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
@@ -12,6 +25,8 @@ import com.tao.finder.R;
 import com.tao.finder.logic.ParseContract;
 import com.tao.finder.logic.Utility;
 
+import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -27,8 +42,7 @@ import android.view.Window;
 import android.widget.TextView;
 
 public class NewEventActivity extends LocationAwareActivity {
-	
-	
+
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
 	 * fragments for each of the sections. We use a
@@ -39,7 +53,7 @@ public class NewEventActivity extends LocationAwareActivity {
 	 */
 	SectionsPagerAdapter mSectionsPagerAdapter;
 	GoogleMap mMap;
-	
+
 	/**
 	 * The {@link ViewPager} that will host the section contents.
 	 */
@@ -85,9 +99,76 @@ public class NewEventActivity extends LocationAwareActivity {
 
 	@Override
 	public void onConnected(Bundle arg0) {
-		mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentByTag(Utility.getFragmentTag(R.id.pager,0))).getMap();
+		mMap = ((SupportMapFragment) getSupportFragmentManager()
+				.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 0)))
+				.getMap();
+		UiSettings settings = mMap.getUiSettings();
+		settings.setCompassEnabled(true);
+		
+		Location l = mLocationClient.getLastLocation();
+		LatLng centerPoint = Utility.toLatLng(l);
+		LatLng radiusPoint = new LatLng(l.getLatitude() + 0.001,
+				l.getLongitude());
+		
+		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerPoint, 15));
+
+		CircleOptions circleOptions = new CircleOptions().center(centerPoint)
+				.radius(Utility.distance(centerPoint, radiusPoint)) // In meters
+				.strokeWidth((float) 2).strokeColor(Color.GREEN);
+		final Circle circle = mMap.addCircle(circleOptions);
+
+		PolylineOptions polyLineOptions = new PolylineOptions()
+				.add(centerPoint).add(radiusPoint).width((float) 2)
+				.color(Color.BLUE).visible(false);
+		final Polyline line = mMap.addPolyline(polyLineOptions);
+
+		final Marker centerMarker = mMap.addMarker(new MarkerOptions()
+				.position(centerPoint)
+				.draggable(true)
+				.icon(BitmapDescriptorFactory
+						.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+
+		final Marker radiusMarker = mMap.addMarker(new MarkerOptions()
+				.draggable(true)
+				.position(radiusPoint)
+				.icon(BitmapDescriptorFactory
+						.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
+
+		mMap.setOnMarkerDragListener(new OnMarkerDragListener() {
+
+			@Override
+			public void onMarkerDragStart(Marker arg0) {
+				// TODO Auto-generated method stub
+				updateLine();
+				circle.setVisible(false);
+				line.setVisible(true);
+			}
+
+			@Override
+			public void onMarkerDragEnd(Marker arg0) {
+				circle.setCenter(centerMarker.getPosition());
+				circle.setRadius(Utility.distance(centerMarker.getPosition(),
+						radiusMarker.getPosition()));
+				circle.setVisible(true);
+				line.setVisible(false);
+				mMap.animateCamera(CameraUpdateFactory.newLatLng(centerMarker.getPosition()));
+			}
+
+			@Override
+			public void onMarkerDrag(Marker arg0) {
+				updateLine();
+			}
+			
+			private void updateLine()
+			{
+				LinkedList<LatLng> l = new LinkedList<LatLng>();
+				l.add(centerMarker.getPosition());
+				l.add(radiusMarker.getPosition());
+				line.setPoints(l);
+			}
+		});
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -110,19 +191,23 @@ public class NewEventActivity extends LocationAwareActivity {
 			// getItem is called to instantiate the fragment for the given page.
 			// Return a DummySectionFragment (defined as a static inner class
 			// below) with the page number as its lone argument.
-			//Fragment fragment = new DummySectionFragment();
-			
-			GoogleMapOptions options = new GoogleMapOptions();
-			options.mapType(GoogleMap.MAP_TYPE_TERRAIN)
-			.compassEnabled(true);
-			
-			Fragment fragment = SupportMapFragment.newInstance(options);
-			
+			// Fragment fragment = new DummySectionFragment();
+
+			Fragment fragment = null;
+
+			if (position == 0) {
+				fragment = new SupportMapFragment();
+			} else {
+				fragment = new DummySectionFragment();
+			}
+
 			Bundle args = new Bundle();
 			args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
 			fragment.setArguments(args);
-			
-			if(!(mLocationClient.isConnected()||mLocationClient.isConnecting()))
+
+			if (position == 0
+					&& !(mLocationClient.isConnected() || mLocationClient
+							.isConnecting()))
 				mLocationClient.connect();
 			return fragment;
 		}
@@ -148,8 +233,6 @@ public class NewEventActivity extends LocationAwareActivity {
 		}
 	}
 
-	
-	
 	/**
 	 * A dummy fragment representing a section of the app, but that simply
 	 * displays dummy text.
@@ -176,13 +259,7 @@ public class NewEventActivity extends LocationAwareActivity {
 			return rootView;
 		}
 	}
-	
-	@Override
-	protected void onStart() {
-		super.onStart();
-		mLocationClient.connect();
-	}
-	
+
 	@Override
 	protected void onStop() {
 		super.onStop();

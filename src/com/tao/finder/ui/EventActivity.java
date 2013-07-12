@@ -19,6 +19,7 @@ import com.tao.finder.logic.BackgroundLocationUpdater;
 import com.tao.finder.logic.LocationUtils;
 import com.tao.finder.logic.ParseContract;
 import com.tao.finder.logic.SuggestionProvider;
+import com.tao.finder.logic.Utility;
 import com.tao.finder.ui.SearchListFragment.OnSearchListener;
 
 import android.app.ActionBar;
@@ -52,17 +53,13 @@ import android.widget.SearchView;
  * @author Tao Qian(taoqian_2015@depauw.edu)
  * 
  */
-public class EventActivity extends FragmentActivity implements
-		ActionBar.TabListener, OnSearchListener,
-		GooglePlayServicesClient.ConnectionCallbacks,
-		GooglePlayServicesClient.OnConnectionFailedListener {
+public class EventActivity extends LocationAwareActivity implements
+		ActionBar.TabListener, OnSearchListener {
 
 	public final static String TAG = "EventActivity";
 
 	// A request to connect to Location Services
 	private LocationRequest mLocationRequest;
-	// Stores the current instantiation of the location client in this object
-	private LocationClient mLocationClient;
 
 	public static final String OBJECT_ID = "object_id";
 	ParseObject event;
@@ -86,118 +83,35 @@ public class EventActivity extends FragmentActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		initializeLocationClient();
+		initializeLocationRequest();
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_event);
 		handleIntent(getIntent());
 	}
 
 	/**
-	 * Initialize the location client and location request instance.
+	 * Initialize the location location request instance
+	 * used for periodical updates.
 	 */
-	private void initializeLocationClient() {
+	private void initializeLocationRequest() {
 		// Create a new global location parameters object
 		mLocationRequest = LocationRequest.create();
 		// Set the update interval
 		mLocationRequest
-				.setInterval(LocationUtils.UPDATE_INTERVAL_IN_MILLISECONDS);
+				.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
 
 		// Use high accuracy
 		mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
 		// Set the interval ceiling to one minute
 		mLocationRequest
-				.setFastestInterval(LocationUtils.FAST_INTERVAL_CEILING_IN_MILLISECONDS);
-		/*
-		 * Create a new location client, using the enclosing class to handle
-		 * callbacks.
-		 */
-		mLocationClient = new LocationClient(this, this, this);
+				.setFastestInterval(FAST_INTERVAL_CEILING_IN_MILLISECONDS);
 	}
-
-	/*
-	 * Handle results returned to this Activity by other Activities started with
-	 * startActivityForResult(). In particular, the method onConnectionFailed()
-	 * in LocationUpdateRemover and LocationUpdateRequester may call
-	 * startResolutionForResult() to start an Activity that handles Google Play
-	 * services problems. The result of this call returns here, to
-	 * onActivityResult.
-	 */
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode,
-			Intent intent) {
-		Log.d(TAG, "onActivityResult");
-		// Choose what to do based on the request code
-		switch (requestCode) {
-		// TODO:Inform user with dialog about the failure.
-		// If the request code matches the code sent in onConnectionFailed
-		case LocationUtils.CONNECTION_FAILURE_RESOLUTION_REQUEST:
-
-			switch (resultCode) {
-			// If Google Play services resolved the problem
-			case Activity.RESULT_OK:
-
-				// Log the result
-				Log.d(TAG, "requestCode:" + getString(R.string.resolved));
-				break;
-
-			// If any other result was returned by Google Play services
-			default:
-				// Log the result
-				Log.d(TAG, "requestCode:" + getString(R.string.no_resolution));
-				break;
-			}
-
-			// If any other request code was received
-		default:
-			// Report that this Activity received an unknown requestCode
-			Log.d(TAG,
-					"requestCode"
-							+ getString(R.string.unknown_activity_request_code,
-									requestCode));
-			break;
-		}
-	}
-
-	@Override
-	public void onConnectionFailed(ConnectionResult connectionResult) {
-		// TODO display dialogs
-
-		/*
-		 * Google Play services can resolve some errors it detects. If the error
-		 * has a resolution, try sending an Intent to start a Google Play
-		 * services activity that can resolve error.
-		 */
-		if (connectionResult.hasResolution()) {
-			Log.d(TAG, "onConnectionFailed:has resolution");
-			try {
-
-				// Start an Activity that tries to resolve the error
-				connectionResult.startResolutionForResult(this,
-						LocationUtils.CONNECTION_FAILURE_RESOLUTION_REQUEST);
-
-				/*
-				 * Thrown if Google Play services canceled the original
-				 * PendingIntent
-				 */
-
-			} catch (IntentSender.SendIntentException e) {
-
-				// Log the error
-				e.printStackTrace();
-			}
-		} else {
-
-			// If no resolution is available, display a dialog to the user with
-			// the error;
-			Log.d(TAG, "onConnectionFailed:no resolution");
-		}
-	}
-
+	
 	@Override
 	protected void onStop() {
-		mLocationClient.disconnect();
 		super.onStop();
+		mLocationClient.disconnect();
 	}
 
 	/**
@@ -217,17 +131,6 @@ public class EventActivity extends FragmentActivity implements
 		}
 	}
 
-	@Override
-	public void onConnected(Bundle arg0) {
-		Log.d(TAG, "Connected location client");
-		changeLocationUpdate();
-	}
-
-	@Override
-	public void onDisconnected() {
-		Log.d(TAG, "Disconnected location client");
-	}
-
 	/**
 	 * Create and return a pending intent for the BackgroundLocationUpdater
 	 * service.
@@ -239,18 +142,6 @@ public class EventActivity extends FragmentActivity implements
 				BackgroundLocationUpdater.class);
 		return PendingIntent.getService(getApplicationContext(), 1, i,
 				PendingIntent.FLAG_UPDATE_CURRENT);
-	}
-
-	/**
-	 * Get the tag used to identify different Fragments. This is necessary
-	 * because identifying fragment by Id w will give NullPointerException.
-	 * 
-	 * @param pos
-	 *            the position of the tab.
-	 * @return the Tag of the fragment.
-	 */
-	private String getFragmentTag(int pos) {
-		return "android:switcher:" + R.id.pager + ":" + pos;
 	}
 
 	/**
@@ -501,7 +392,7 @@ public class EventActivity extends FragmentActivity implements
 					.trim();
 			// use the query to search data
 			PersonSearchFragment frag = (PersonSearchFragment) getSupportFragmentManager()
-					.findFragmentByTag(getFragmentTag(1));
+					.findFragmentByTag(Utility.getFragmentTag(R.id.pager,1));
 			frag.newSearch(searchString, event.getObjectId());
 			// Adds the current search to the search history.
 			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(

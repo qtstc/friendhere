@@ -36,9 +36,9 @@ public class BackgroundLocationUpdater extends IntentService {
 					ParseContract.CLIENT_KEY);
 			ParseUser user = ParseUser.getCurrentUser();
 			if (user != null) {
-				// ParseContract.User.updateLocation(user, location);
+				ParseContract.User.updateLocation(user, location);
 			}
-			Log.e("Background Receiver",
+			Log.d("Background Receiver",
 					"onHandleIntent " + location.getLatitude() + ","
 							+ location.getLongitude());
 		}

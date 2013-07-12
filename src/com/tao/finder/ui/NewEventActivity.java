@@ -1,20 +1,23 @@
 package com.tao.finder.ui;
 
 import java.util.Date;
-import java.util.Locale;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.tao.finder.R;
 import com.tao.finder.logic.ParseContract;
+import com.tao.finder.logic.Utility;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,8 +26,9 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.TextView;
 
-public class NewEventActivity extends FragmentActivity {
-
+public class NewEventActivity extends LocationAwareActivity {
+	
+	
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
 	 * fragments for each of the sections. We use a
@@ -34,7 +38,8 @@ public class NewEventActivity extends FragmentActivity {
 	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
 	 */
 	SectionsPagerAdapter mSectionsPagerAdapter;
-
+	GoogleMap mMap;
+	
 	/**
 	 * The {@link ViewPager} that will host the section contents.
 	 */
@@ -48,7 +53,6 @@ public class NewEventActivity extends FragmentActivity {
 			ParseContract.Event.createEvent(ParseUser.getCurrentUser(),
 					"TestEvent2", new Date(1000), new Date(10000), 12, 13, 10,
 					"Just for testing", new SaveCallback() {
-
 						@Override
 						public void done(ParseException e) {
 							// TODO Auto-generated method stub
@@ -77,9 +81,13 @@ public class NewEventActivity extends FragmentActivity {
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mSectionsPagerAdapter);
-
 	}
 
+	@Override
+	public void onConnected(Bundle arg0) {
+		mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentByTag(Utility.getFragmentTag(R.id.pager,0))).getMap();
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -103,10 +111,19 @@ public class NewEventActivity extends FragmentActivity {
 			// Return a DummySectionFragment (defined as a static inner class
 			// below) with the page number as its lone argument.
 			//Fragment fragment = new DummySectionFragment();
-			Fragment fragment = new MapAreaFragment();
+			
+			GoogleMapOptions options = new GoogleMapOptions();
+			options.mapType(GoogleMap.MAP_TYPE_TERRAIN)
+			.compassEnabled(true);
+			
+			Fragment fragment = SupportMapFragment.newInstance(options);
+			
 			Bundle args = new Bundle();
 			args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
 			fragment.setArguments(args);
+			
+			if(!(mLocationClient.isConnected()||mLocationClient.isConnecting()))
+				mLocationClient.connect();
 			return fragment;
 		}
 
@@ -159,5 +176,16 @@ public class NewEventActivity extends FragmentActivity {
 			return rootView;
 		}
 	}
-
+	
+	@Override
+	protected void onStart() {
+		super.onStart();
+		mLocationClient.connect();
+	}
+	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		mLocationClient.disconnect();
+	}
 }

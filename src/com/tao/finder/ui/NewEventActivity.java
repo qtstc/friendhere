@@ -3,11 +3,9 @@ package com.tao.finder.ui;
 import java.util.Date;
 import java.util.LinkedList;
 
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -25,6 +23,9 @@ import com.tao.finder.R;
 import com.tao.finder.logic.ParseContract;
 import com.tao.finder.logic.Utility;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
@@ -32,14 +33,19 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.TextView;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.Spinner;
+import android.widget.TimePicker;
 
 public class NewEventActivity extends LocationAwareActivity {
 
@@ -52,12 +58,145 @@ public class NewEventActivity extends LocationAwareActivity {
 	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
 	 */
 	SectionsPagerAdapter mSectionsPagerAdapter;
-	GoogleMap mMap;
+
+	private Marker centerMarker;// The map marker used to indicate the center of
+								// the event.
+	private Marker radiusMarker;// The map marker used to indicate the radius of
+								// the event.
+
+	public final static double DEFAULT_EVENT_RADIUS = 0.001;// The default
+															// radius of the
+															// event as
+															// expressed in
+															// longitude/latitude
+	public final static int DEFAULT_ZOOM_LEVEL = 15;// The default zoom level of
+													// the map.
 
 	/**
 	 * The {@link ViewPager} that will host the section contents.
 	 */
 	ViewPager mViewPager;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		setContentView(R.layout.activity_new_event);
+
+		// Create the adapter that will return a fragment for each of the three
+		// primary sections of the app.
+		mSectionsPagerAdapter = new SectionsPagerAdapter(
+				getSupportFragmentManager());
+
+		// Set up the ViewPager with the sections adapter.
+		mViewPager = (ViewPager) findViewById(R.id.pager);
+		mViewPager.setAdapter(mSectionsPagerAdapter);
+	}
+
+	/*
+	 * Initialize the map instance after connected to the Google Play service.
+	 * We put the initialization here because setting up the map requires the
+	 * current location of the user, which can only be acquired after connected
+	 * to the service.
+	 * 
+	 * @see
+	 * com.tao.finder.ui.LocationAwareActivity#onConnected(android.os.Bundle)
+	 */
+	@Override
+	public void onConnected(Bundle arg0) {
+		// Get the map shown in the fragment.
+		final GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager()
+				.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 0)))
+				.getMap();
+		// Change the display settings of the map.
+		UiSettings settings = mMap.getUiSettings();
+		settings.setCompassEnabled(true);
+
+		// Get the current location of the user,
+		// use it as the default event location,
+		// and give the location a default radius.
+		Location l = mLocationClient.getLastLocation();
+		LatLng centerPoint = Utility.toLatLng(l);
+		LatLng radiusPoint = new LatLng(l.getLatitude() + DEFAULT_EVENT_RADIUS,
+				l.getLongitude());
+
+		// Zoom to the location of the user
+		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerPoint,
+				DEFAULT_ZOOM_LEVEL));
+
+		// Create the circle that represents the event area.
+		CircleOptions circleOptions = new CircleOptions().center(centerPoint)
+				.radius(Utility.distance(centerPoint, radiusPoint)) // In meters
+				.strokeWidth((float) 4).strokeColor(Color.WHITE);
+		final Circle circle = mMap.addCircle(circleOptions);
+
+		// Create the polyline that indicates the radius when the user is moving
+		// the markers around
+		PolylineOptions polyLineOptions = new PolylineOptions()
+				.add(centerPoint).add(radiusPoint).width((float) 4)
+				.color(Color.WHITE).visible(false);
+		final Polyline line = mMap.addPolyline(polyLineOptions);
+
+		// Create the marker that represents the center
+		centerMarker = mMap.addMarker(new MarkerOptions()
+				.position(centerPoint)
+				.draggable(true)
+				.icon(BitmapDescriptorFactory
+						.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+
+		// Create the marker that represents the radius
+		radiusMarker = mMap.addMarker(new MarkerOptions()
+				.draggable(true)
+				.position(radiusPoint)
+				.icon(BitmapDescriptorFactory
+						.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
+
+		mMap.setOnMarkerDragListener(new OnMarkerDragListener() {
+
+			@Override
+			public void onMarkerDragStart(Marker arg0) {
+				// Hide circle show marker.
+				updateLine();
+				circle.setVisible(false);
+				line.setVisible(true);
+			}
+
+			@Override
+			public void onMarkerDragEnd(Marker arg0) {
+				// Update circle, show circle, hide marker
+				circle.setCenter(centerMarker.getPosition());
+				circle.setRadius(Utility.distance(centerMarker.getPosition(),
+						radiusMarker.getPosition()));
+				circle.setVisible(true);
+				line.setVisible(false);
+				mMap.animateCamera(CameraUpdateFactory.newLatLng(centerMarker
+						.getPosition()));
+			}
+
+			@Override
+			public void onMarkerDrag(Marker arg0) {
+				updateLine();
+			}
+
+			/**
+			 * Update the PolyLine that helps the user visualize the radius when
+			 * moving markers. It changes the two end points to be the location
+			 * of the two markers.
+			 */
+			private void updateLine() {
+				LinkedList<LatLng> l = new LinkedList<LatLng>();
+				l.add(centerMarker.getPosition());
+				l.add(radiusMarker.getPosition());
+				line.setPoints(l);
+			}
+		});
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		mLocationClient.disconnect();
+	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -79,94 +218,6 @@ public class NewEventActivity extends LocationAwareActivity {
 		}
 
 		return super.onOptionsItemSelected(item);
-	}
-
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-		setContentView(R.layout.activity_new_event);
-
-		// Create the adapter that will return a fragment for each of the three
-		// primary sections of the app.
-		mSectionsPagerAdapter = new SectionsPagerAdapter(
-				getSupportFragmentManager());
-
-		// Set up the ViewPager with the sections adapter.
-		mViewPager = (ViewPager) findViewById(R.id.pager);
-		mViewPager.setAdapter(mSectionsPagerAdapter);
-	}
-
-	@Override
-	public void onConnected(Bundle arg0) {
-		mMap = ((SupportMapFragment) getSupportFragmentManager()
-				.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 0)))
-				.getMap();
-		UiSettings settings = mMap.getUiSettings();
-		settings.setCompassEnabled(true);
-		
-		Location l = mLocationClient.getLastLocation();
-		LatLng centerPoint = Utility.toLatLng(l);
-		LatLng radiusPoint = new LatLng(l.getLatitude() + 0.001,
-				l.getLongitude());
-		
-		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerPoint, 15));
-
-		CircleOptions circleOptions = new CircleOptions().center(centerPoint)
-				.radius(Utility.distance(centerPoint, radiusPoint)) // In meters
-				.strokeWidth((float) 2).strokeColor(Color.GREEN);
-		final Circle circle = mMap.addCircle(circleOptions);
-
-		PolylineOptions polyLineOptions = new PolylineOptions()
-				.add(centerPoint).add(radiusPoint).width((float) 2)
-				.color(Color.BLUE).visible(false);
-		final Polyline line = mMap.addPolyline(polyLineOptions);
-
-		final Marker centerMarker = mMap.addMarker(new MarkerOptions()
-				.position(centerPoint)
-				.draggable(true)
-				.icon(BitmapDescriptorFactory
-						.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-
-		final Marker radiusMarker = mMap.addMarker(new MarkerOptions()
-				.draggable(true)
-				.position(radiusPoint)
-				.icon(BitmapDescriptorFactory
-						.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
-
-		mMap.setOnMarkerDragListener(new OnMarkerDragListener() {
-
-			@Override
-			public void onMarkerDragStart(Marker arg0) {
-				// TODO Auto-generated method stub
-				updateLine();
-				circle.setVisible(false);
-				line.setVisible(true);
-			}
-
-			@Override
-			public void onMarkerDragEnd(Marker arg0) {
-				circle.setCenter(centerMarker.getPosition());
-				circle.setRadius(Utility.distance(centerMarker.getPosition(),
-						radiusMarker.getPosition()));
-				circle.setVisible(true);
-				line.setVisible(false);
-				mMap.animateCamera(CameraUpdateFactory.newLatLng(centerMarker.getPosition()));
-			}
-
-			@Override
-			public void onMarkerDrag(Marker arg0) {
-				updateLine();
-			}
-			
-			private void updateLine()
-			{
-				LinkedList<LatLng> l = new LinkedList<LatLng>();
-				l.add(centerMarker.getPosition());
-				l.add(radiusMarker.getPosition());
-				line.setPoints(l);
-			}
-		});
 	}
 
 	@Override
@@ -195,27 +246,25 @@ public class NewEventActivity extends LocationAwareActivity {
 
 			Fragment fragment = null;
 
-			if (position == 0) {
+			switch (position) {
+			case 0:
 				fragment = new SupportMapFragment();
-			} else {
-				fragment = new DummySectionFragment();
+				if (!(mLocationClient.isConnected() || mLocationClient
+						.isConnecting()))
+					mLocationClient.connect();
+				break;
+			case 1:
+				fragment = new NewEventFormFragment();
+				break;
+			default:
 			}
 
-			Bundle args = new Bundle();
-			args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
-			fragment.setArguments(args);
-
-			if (position == 0
-					&& !(mLocationClient.isConnected() || mLocationClient
-							.isConnecting()))
-				mLocationClient.connect();
 			return fragment;
 		}
 
 		@Override
 		public int getCount() {
-			// Show 3 total pages.
-			return 3;
+			return 2;
 		}
 
 		@Override
@@ -226,43 +275,44 @@ public class NewEventActivity extends LocationAwareActivity {
 				return "Hoho";
 			case 1:
 				return "Haha";
-			case 2:
-				return "Hehe";
+			default:
 			}
 			return null;
 		}
 	}
 
-	/**
-	 * A dummy fragment representing a section of the app, but that simply
-	 * displays dummy text.
-	 */
-	public static class DummySectionFragment extends Fragment {
-		/**
-		 * The fragment argument representing the section number for this
-		 * fragment.
-		 */
-		public static final String ARG_SECTION_NUMBER = "section_number";
+	public static class NewEventFormFragment extends Fragment {
 
-		public DummySectionFragment() {
+		public NewEventFormFragment() {
 		}
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_new_event_dummy,
+			View rootView = inflater.inflate(R.layout.fragment_new_event_form,
 					container, false);
-			TextView dummyTextView = (TextView) rootView
-					.findViewById(R.id.section_label);
-			dummyTextView.setText(Integer.toString(getArguments().getInt(
-					ARG_SECTION_NUMBER)));
+			Button startingTime = (Button) rootView.findViewById(R.id.startingTimeSpinner);
+			Button endingTime = (Button) rootView.findViewById(R.id.endingTimeSpinner);
+			startingTime.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+						 Dialog dialog = new Dialog(getActivity());
+
+						 dialog.setContentView(R.layout.date_time_picker);   
+						 DatePicker datePicker = (DatePicker)dialog.findViewById(R.id.datePicker);
+						 TimePicker timePicker = (TimePicker)dialog.findViewById(R.id.timePicker);
+						 dialog.show();
+						 dialog.setOnDismissListener(new OnDismissListener() {
+							
+							@Override
+							public void onDismiss(DialogInterface dialog) {
+								//startingTime.
+							}
+						});
+				}
+			});
 			return rootView;
 		}
-	}
-
-	@Override
-	protected void onStop() {
-		super.onStop();
-		mLocationClient.disconnect();
 	}
 }

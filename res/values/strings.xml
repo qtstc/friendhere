@@ -11,6 +11,10 @@
     <string name="event_info">info</string>
     <string name="event_people">people</string>
     <string name="title_activity_new_event">New</string>
+    <string name="start_at">Start at</string>
+    <string name="end_at">End at</string>
+    <string name="event_name">Event name</string>
+    <string name="event_description">Event description</string>
     
     <string name="app_id">484510971628209</string>
     <string name = "debug_api_key">AIzaSyCa2N7Mc54UXqrmxrErZpN5gBtJdTMqS30</string>
@@ -72,4 +76,5 @@
     <string name="unknown_activity_request_code">
         Received an unknown activity request code %1$d in onActivityResult.
     </string>
+    
 </resources>

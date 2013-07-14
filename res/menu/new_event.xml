@@ -4,11 +4,5 @@
           android:title="@string/action_create_event"
           android:icon="@drawable/content_new_event"
           android:showAsAction="collapseActionView|ifRoom"/>
-        
-    <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="@string/action_settings"/>
 
 </menu>

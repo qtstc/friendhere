@@ -15,6 +15,15 @@
     <string name="end_at">End at</string>
     <string name="event_name">Event name</string>
     <string name="event_description">Event description</string>
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
+    <string name="location">Location</string>
+    <string name="detail">Detail</string>
+    
+    <!-- New event validation message -->
+    <string name="starting_time_too_late">Starting time cannot be after ending time.</string>
+    <string name="ending_time_too_early">Ending time cannot be later than current time.</string>
+    <string name="empty_name">Event name cannot be empty.</string>
     
     <string name="app_id">484510971628209</string>
     <string name = "debug_api_key">AIzaSyCa2N7Mc54UXqrmxrErZpN5gBtJdTMqS30</string>
@@ -35,7 +44,7 @@
     <string name="latitude_longitude">%1$.8f, %2$.8f</string>
 
     
-    <!-- Messages -->
+    <!-- Google Play service connection Messages -->
     <string name="connected">Client connected</string>
     <string name="connection_error_code_unknown">Unknown connection error code:  %1$d</string>
     <string name="connection_failed">Connection failed</string>

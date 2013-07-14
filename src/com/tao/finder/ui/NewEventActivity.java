@@ -1,5 +1,6 @@
 package com.tao.finder.ui;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 
@@ -23,7 +24,10 @@ import com.tao.finder.R;
 import com.tao.finder.logic.ParseContract;
 import com.tao.finder.logic.Utility;
 
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.graphics.Color;
@@ -33,6 +37,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.text.format.Time;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -44,8 +50,10 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 public class NewEventActivity extends LocationAwareActivity {
 
@@ -202,14 +210,42 @@ public class NewEventActivity extends LocationAwareActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_create_event:
+			NewEventFormFragment frag = (NewEventFormFragment) getSupportFragmentManager()
+					.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 1));
+
+			// Validate user input.
+			String errorMessage = "";
+			Date start = frag.getStartingTime();
+			Date end = frag.getEndingTime();
+			if (start.after(end))
+				errorMessage += "\n" + getText(R.string.starting_time_too_late);
+			if (end.before(Calendar.getInstance().getTime()))
+				errorMessage += "\n" + getText(R.string.ending_time_too_early);
+
+			String name = frag.getName().trim();
+			if (name.equals(""))
+				errorMessage += "\n" + getText(R.string.empty_name);
+			String description = frag.getDescription().trim();
+
+			errorMessage = errorMessage.trim();
+			if (!errorMessage.isEmpty()) {
+				Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
+				return true;
+			}
 			setProgressBarIndeterminateVisibility(true);
-			ParseContract.Event.createEvent(ParseUser.getCurrentUser(),
-					"TestEvent2", new Date(1000), new Date(10000), 12, 13, 10,
-					"Just for testing", new SaveCallback() {
+			ParseContract.Event.createEvent(ParseUser.getCurrentUser(), name,
+					start, end, centerMarker.getPosition().longitude,
+					centerMarker.getPosition().latitude, (int) Utility
+							.distance(centerMarker.getPosition(),
+									radiusMarker.getPosition()), description,
+					new SaveCallback() {
 						@Override
 						public void done(ParseException e) {
 							// TODO Auto-generated method stub
+							if (e != null)
+								e.printStackTrace();
 							setProgressBarIndeterminateVisibility(false);
+							finish();
 						}
 					});
 			break;
@@ -269,21 +305,48 @@ public class NewEventActivity extends LocationAwareActivity {
 
 		@Override
 		public CharSequence getPageTitle(int position) {
-			// Locale l = Locale.getDefault();
 			switch (position) {
 			case 0:
-				return "Hoho";
+				return getText(R.string.location);
 			case 1:
-				return "Haha";
+				return getText(R.string.detail);
 			default:
 			}
 			return null;
 		}
 	}
 
+	/**
+	 * Fragment that allows the user to type in the information related to a new
+	 * event.
+	 * 
+	 * @author Tao Qian(taoqian_2015@depauw.edu)
+	 * 
+	 */
 	public static class NewEventFormFragment extends Fragment {
 
 		public NewEventFormFragment() {
+		}
+
+		private Calendar starting;
+		private Calendar ending;
+		private EditText nameEditText;
+		private EditText descriptionEditText;
+
+		public Date getStartingTime() {
+			return starting.getTime();
+		}
+
+		public Date getEndingTime() {
+			return ending.getTime();
+		}
+
+		public String getName() {
+			return nameEditText.getText().toString();
+		}
+
+		public String getDescription() {
+			return descriptionEditText.getText().toString();
 		}
 
 		@Override
@@ -291,28 +354,89 @@ public class NewEventActivity extends LocationAwareActivity {
 				Bundle savedInstanceState) {
 			View rootView = inflater.inflate(R.layout.fragment_new_event_form,
 					container, false);
-			Button startingTime = (Button) rootView.findViewById(R.id.startingTimeSpinner);
-			Button endingTime = (Button) rootView.findViewById(R.id.endingTimeSpinner);
-			startingTime.setOnClickListener(new OnClickListener() {
-				
-				@Override
-				public void onClick(View v) {
-						 Dialog dialog = new Dialog(getActivity());
 
-						 dialog.setContentView(R.layout.date_time_picker);   
-						 DatePicker datePicker = (DatePicker)dialog.findViewById(R.id.datePicker);
-						 TimePicker timePicker = (TimePicker)dialog.findViewById(R.id.timePicker);
-						 dialog.show();
-						 dialog.setOnDismissListener(new OnDismissListener() {
-							
-							@Override
-							public void onDismiss(DialogInterface dialog) {
-								//startingTime.
-							}
-						});
-				}
-			});
+			nameEditText = (EditText) rootView
+					.findViewById(R.id.eventNameEditText);
+			descriptionEditText = (EditText) rootView
+					.findViewById(R.id.eventDescriptionEditText);
+
+			Button startingTime = (Button) rootView
+					.findViewById(R.id.startingTimeSpinner);
+			Button endingTime = (Button) rootView
+					.findViewById(R.id.endingTimeSpinner);
+
+			starting = Calendar.getInstance();
+			ending = Calendar.getInstance();
+			ending.add(Calendar.HOUR, 1);
+
+			startingTime.setText(Utility.dateToString(starting.getTime()));
+			endingTime.setText(Utility.dateToString(ending.getTime()));
+			startingTime.setOnClickListener(new DateTimeOnClickListener(
+					starting));
+			endingTime.setOnClickListener(new DateTimeOnClickListener(ending));
 			return rootView;
 		}
+	}
+
+	/**
+	 * OnClick listener for the button that shows a date time picker dialog.
+	 * 
+	 * @author Tao Qian(taoqian_2015@depauw.edu)
+	 * 
+	 */
+	public static class DateTimeOnClickListener implements OnClickListener {
+		private Calendar c;
+
+		/**
+		 * 
+		 * @param c
+		 *            the Calendar instance to be updated
+		 */
+		public DateTimeOnClickListener(Calendar c) {
+			this.c = c;
+		}
+
+		@Override
+		public void onClick(final View v) {
+			Context mContext = v.getContext();
+
+			// Build a custom view that contains both a date picker and a time
+			// picker
+			Builder builder = new Builder(mContext);
+			View dialogView = ((LayoutInflater) mContext
+					.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+					.inflate(R.layout.date_time_picker, null);
+			final DatePicker datePicker = (DatePicker) dialogView
+					.findViewById(R.id.datePicker);
+			final TimePicker timePicker = (TimePicker) dialogView
+					.findViewById(R.id.timePicker);
+			datePicker.getCalendarView().setDate(c.getTimeInMillis());
+			timePicker.setCurrentHour(c.get(Calendar.HOUR_OF_DAY));
+			timePicker.setCurrentMinute(c.get(Calendar.MINUTE));
+			datePicker.setCalendarViewShown(false);
+
+			// Set the buttons.
+			builder.setView(dialogView);
+			builder.setCancelable(false);
+			builder.setPositiveButton(mContext.getText(R.string.ok),
+					new DialogInterface.OnClickListener() {
+
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							c.setTimeInMillis(datePicker.getCalendarView()
+									.getDate());
+							c.set(Calendar.HOUR_OF_DAY,
+									timePicker.getCurrentHour());
+							c.set(Calendar.MINUTE,
+									timePicker.getCurrentMinute());
+							Button b = (Button) v;
+							b.setText(Utility.dateToString(c.getTime()));
+						}
+					});
+			builder.setNegativeButton(mContext.getText(R.string.cancel), null);
+			AlertDialog dialog = builder.create();
+			dialog.show();
+		}
+
 	}
 }

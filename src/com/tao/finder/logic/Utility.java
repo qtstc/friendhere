@@ -1,5 +1,8 @@
 package com.tao.finder.logic;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import android.location.Location;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -13,6 +16,7 @@ import com.tao.finder.R;
  */
 public class Utility {
 	
+	public final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM-dd-yyyy HH:mm");	
 	public static String truncString(String s, int length) {
 		if (s.length() < length)
 			return s;
@@ -65,5 +69,15 @@ public class Utility {
 	    int meterConversion = 1609;
 
 	    return (float)distance * meterConversion;
+	}
+	
+	/**
+	 * Return the string representation of a Date instance.
+	 * @param the date
+	 * @return string as in MM/dd/YYYY HH:mm
+	 */
+	public static String dateToString(Date d)
+	{
+		return DATE_FORMAT.format(d);
 	}
 }

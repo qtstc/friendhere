@@ -68,7 +68,6 @@ public class EventActivity extends LocationAwareActivity implements
 	// A request to connect to Location Services
 	private LocationRequest mLocationRequest;
 
-	public static final String OBJECT_ID = "object_id";
 	ParseObject event;
 	ParseObject checkin;
 
@@ -120,23 +119,6 @@ public class EventActivity extends LocationAwareActivity implements
 	protected void onStop() {
 		super.onStop();
 		mLocationClient.disconnect();
-	}
-
-	/**
-	 * Either start or stop background location tracking.
-	 */
-	private void changeLocationUpdate() {
-		// If onConnect() is not called yet, return.
-		if (mLocationClient == null)
-			return;
-		if (checkin == null) {
-			mLocationClient.removeLocationUpdates(getPendingIntent());
-			Log.d(TAG, "Removed PendingIntent");
-		} else {
-			mLocationClient.requestLocationUpdates(mLocationRequest,
-					getPendingIntent());
-			Log.d(TAG, "Added PendingIntent");
-		}
 	}
 
 	/**
@@ -382,11 +364,10 @@ public class EventActivity extends LocationAwareActivity implements
 	 *            the intent sent to this activity.
 	 */
 	private void handleIntent(Intent intent) {
-		Log.e("Intent handled","h");
-		String objectId = intent.getStringExtra(OBJECT_ID);
+		String objectId = intent.getStringExtra(SearchListFragment.OBJECT_ID);
 		// If the intent is sent from EventListActivity with an object id.
 		if (objectId != null) {
-			ParseContract.Event.getEventFromId(objectId,
+			ParseContract.Event.getEventById(objectId,
 					new GetCallback<ParseObject>() {
 
 						@Override

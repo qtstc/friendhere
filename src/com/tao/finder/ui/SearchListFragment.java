@@ -30,6 +30,9 @@ public abstract class SearchListFragment extends Fragment {
 
 	// public static final String ARG_SEARCH_STRING = "search_string";
 	private static final String NO_SEARCH = "user_did_not_search_yet";
+	
+	//Name of the string extra sent to the new activity when a result is selected.
+	public static final String OBJECT_ID = "object_id";
 
 	protected String searchString;
 	// Used to stop list from refreshing when
@@ -79,7 +82,7 @@ public abstract class SearchListFragment extends Fragment {
 				ParseObject item = (ParseObject) parent.getAdapter().getItem(
 						position);
 				Intent intent = new Intent(getActivity(), navigationDestination);
-				intent.putExtra(EventActivity.OBJECT_ID, item.getObjectId());
+				intent.putExtra(OBJECT_ID, item.getObjectId());
 				startActivity(intent);
 			}
 		});

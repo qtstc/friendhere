@@ -5,7 +5,9 @@ import java.util.Locale;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
+import com.parse.ParseUser;
 import com.tao.finder.R;
+import com.tao.finder.logic.ParseContract;
 import com.tao.finder.logic.Utility;
 import com.tao.finder.ui.NewEventActivity.NewEventFormFragment;
 
@@ -27,6 +29,8 @@ import android.widget.TextView;
 public class PersonActivity extends FragmentActivity implements
 		ActionBar.TabListener, CustomMapFragment.OnCreatedListener {
 
+	private ParseUser user;
+	
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
 	 * fragments for each of the sections. We use a
@@ -197,6 +201,10 @@ public class PersonActivity extends FragmentActivity implements
 		{
 			mMap.setMyLocationEnabled(true);
 		}
+		
+		String objectId = getIntent().getStringExtra(SearchListFragment.OBJECT_ID);
+		//ParseContract.User.getPersonById(objectId, )
+		
 	}
 
 }

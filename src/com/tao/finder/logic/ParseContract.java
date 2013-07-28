@@ -58,7 +58,7 @@ public class ParseContract {
 		 *            the location
 		 */
 		public static void updateLocation(ParseUser user, Location l) {
-			user.put(LOCATION, locationToGeoPoint(l));
+			user.put(LOCATION, toGeoPoint(l));
 			user.saveEventually();
 		}
 
@@ -69,8 +69,18 @@ public class ParseContract {
 		 *            the Location instance
 		 * @return the ParseGeoPoint instance
 		 */
-		public static ParseGeoPoint locationToGeoPoint(Location l) {
+		public static ParseGeoPoint toGeoPoint(Location l) {
 			return new ParseGeoPoint(l.getLatitude(), l.getLongitude());
+		}
+		
+		/**
+		 * Get a ParseUser instance from the server based on its object id
+		 * @param objectId the object id of the ParseUser instance.
+		 * @param callback the callback to be executed afterwards.
+		 */
+		public static void getPersonById(String objectId,GetCallback<ParseUser> callback)
+		{
+			ParseUser.getQuery().getInBackground(objectId, callback);
 		}
 
 		/**
@@ -91,7 +101,7 @@ public class ParseContract {
 		public static void searchPerson(final String searchString,
 				final String eventId, final int resultNumber, final int skip,
 				final FindCallback<ParseUser> callback) {
-			Event.getEventFromId(eventId, new GetCallback<ParseObject>() {
+			Event.getEventById(eventId, new GetCallback<ParseObject>() {
 
 				@Override
 				public void done(ParseObject object, ParseException e) {
@@ -204,7 +214,7 @@ public class ParseContract {
 		 * @param callback
 		 *            the callback to be invoked when the event is returned.
 		 */
-		public static void getEventFromId(String objectId,
+		public static void getEventById(String objectId,
 				GetCallback<ParseObject> callback) {
 			ParseQuery<ParseObject> query = ParseQuery.getQuery(TABLE_NAME);
 			query.getInBackground(objectId, callback);

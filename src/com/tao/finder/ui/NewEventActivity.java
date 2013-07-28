@@ -376,6 +376,8 @@ public class NewEventActivity extends LocationAwareActivity {
 			endingTime.setOnClickListener(new DateTimeOnClickListener(ending));
 			return rootView;
 		}
+		
+		 
 	}
 
 	/**

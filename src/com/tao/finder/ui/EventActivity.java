@@ -45,6 +45,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.SearchView;
+import android.widget.TextView;
 
 /**
  * This activity allows the user to view details of an event, search users who
@@ -86,6 +87,7 @@ public class EventActivity extends LocationAwareActivity implements
 		initializeLocationRequest();
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_event);
+		initializeTabs();
 		handleIntent(getIntent());
 	}
 
@@ -278,16 +280,11 @@ public class EventActivity extends LocationAwareActivity implements
 		@Override
 		public Fragment getItem(int position) {
 			// getItem is called to instantiate the fragment for the given page.
-
 			Fragment fragment = null;
 			switch (position) {
 			// TODO:Set tab 0 as the EventInfoFragment.
 			case 0:
-				fragment = new DummySectionFragment();
-				Bundle args = new Bundle();
-				args.putInt(DummySectionFragment.ARG_SECTION_NUMBER,
-						position + 1);
-				fragment.setArguments(args);
+				fragment = new EventInfoFragment();
 				break;
 			// Set tab 1 as the PersonSearchFragment.
 			case 1:
@@ -317,24 +314,28 @@ public class EventActivity extends LocationAwareActivity implements
 		}
 	}
 
-	/**
-	 * A dummy fragment representing a section of the app, but that simply
-	 * displays dummy text.
-	 */
-	public static class DummySectionFragment extends Fragment {
-		/**
-		 * The fragment argument representing the section number for this
-		 * fragment.
-		 */
-		public static final String ARG_SECTION_NUMBER = "section_number";
-
-		public DummySectionFragment() {
+	public static class EventInfoFragment extends Fragment{
+		public EventInfoFragment(){
+			
 		}
-
+		
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			return null;
+			View rootView = inflater.inflate(R.layout.fragment_event_info,
+					container, false);
+			return rootView;
+		}
+		
+		public void setContent(ParseObject event)
+		{
+			View rootView = getView();
+			TextView description = (TextView)rootView.findViewById(R.id.info_description_textview);
+			description.setText(event.getString(ParseContract.Event.DESCRIPTION));
+			TextView startingTime = (TextView)rootView.findViewById(R.id.info_startingtime_textview);
+			TextView endingTime = (TextView)rootView.findViewById(R.id.info_endingtime_textview);
+			startingTime.setText(getString(R.string.start_at)+" "+Utility.dateToString(event.getDate(ParseContract.Event.STARTING_TIME)));
+			endingTime.setText(getString(R.string.end_at)+" "+Utility.dateToString(event.getDate(ParseContract.Event.ENDING_TIME)));
 		}
 	}
 
@@ -347,6 +348,7 @@ public class EventActivity extends LocationAwareActivity implements
 	 *            the intent sent to this activity.
 	 */
 	private void handleIntent(Intent intent) {
+		Log.e("Intent handled","h");
 		String objectId = intent.getStringExtra(OBJECT_ID);
 		// If the intent is sent from EventListActivity with an object id.
 		if (objectId != null) {
@@ -356,8 +358,10 @@ public class EventActivity extends LocationAwareActivity implements
 						@Override
 						public void done(ParseObject object, ParseException e) {
 							event = object;
-							initializeTabs();
 							setTitle(event.getString(ParseContract.Event.NAME));
+							EventInfoFragment frag = (EventInfoFragment) getSupportFragmentManager()
+									.findFragmentByTag(Utility.getFragmentTag(R.id.pager,0));
+							frag.setContent(event);
 						}
 					});
 			if (ParseUser.getCurrentUser() == null) {

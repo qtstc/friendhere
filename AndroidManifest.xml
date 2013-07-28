@@ -35,7 +35,7 @@
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="@string/debug_api_key" />
-
+        
         <provider
             android:name="com.tao.finder.logic.SuggestionProvider"
             android:authorities="com.tao.finder.logic.SuggestionProvider" />

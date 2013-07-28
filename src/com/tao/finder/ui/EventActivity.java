@@ -5,6 +5,12 @@ import java.util.Locale;
 
 import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.parse.DeleteCallback;
@@ -327,9 +333,36 @@ public class EventActivity extends LocationAwareActivity implements
 			return rootView;
 		}
 		
+		/**
+		 * Populate the GUI with event information.
+		 * To be called after the fragment is created.
+		 * @param event 
+		 */
 		public void setContent(ParseObject event)
 		{
 			View rootView = getView();
+			SupportMapFragment frag = (SupportMapFragment)getFragmentManager().findFragmentById(R.id.info_map);
+			GoogleMap map = frag.getMap();
+			
+			// Change the display settings of the map.
+			UiSettings settings = map.getUiSettings();
+			settings.setCompassEnabled(true);
+			settings.setMyLocationButtonEnabled(true);
+			
+			LatLng centerPoint = Utility.toLatLng(event.getParseGeoPoint(ParseContract.Event.LOCATION));
+			
+			// Zoom to the location of the user
+			map.moveCamera(CameraUpdateFactory.newLatLngZoom(centerPoint,
+					NewEventActivity.DEFAULT_ZOOM_LEVEL));
+			
+			// Create the circle that represents the event area.
+			CircleOptions circleOptions = new CircleOptions().center(centerPoint)
+					.radius(event.getInt(ParseContract.Event.RADIUS)) // In meters
+					.strokeWidth((float) 4).strokeColor(NewEventActivity.EVENT_AREA_STROKE_COLOR)
+					.fillColor(NewEventActivity.EVENT_AREA_FILL_COLOR);
+			map.addCircle(circleOptions);
+			
+			
 			TextView description = (TextView)rootView.findViewById(R.id.info_description_textview);
 			description.setText(event.getString(ParseContract.Event.DESCRIPTION));
 			TextView startingTime = (TextView)rootView.findViewById(R.id.info_startingtime_textview);

@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -158,12 +159,11 @@ public abstract class LocationAwareActivity extends FragmentActivity implements 
 		}
 	}
 	
-	
 	/*
 	 * Define a request code to send to Google Play services This code is
 	 * returned in Activity.onActivityResult
 	 */
-	public final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+	public static final int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
 	
 	/*

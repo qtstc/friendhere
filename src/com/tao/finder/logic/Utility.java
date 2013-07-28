@@ -6,6 +6,7 @@ import java.util.Date;
 import android.location.Location;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.parse.ParseGeoPoint;
 import com.tao.finder.R;
 
 /**
@@ -45,6 +46,16 @@ public class Utility {
 	public static LatLng toLatLng(Location l)
 	{
 		return new LatLng(l.getLatitude(), l.getLongitude());
+	}
+	
+	/**
+	 * Converts a ParseGeoPoint instance to a LatLng instance.
+	 * @param p the ParseGeoPoint instance
+	 * @return the LatLng instance
+	 */
+	public static LatLng toLatLng(ParseGeoPoint p)
+	{
+		return new LatLng(p.getLatitude(),p.getLongitude());
 	}
 	
 

@@ -197,9 +197,9 @@ int id fl_inner 0x7f07003e
 int id flip 0x7f07000d
 int id gridview 0x7f07000e
 int id hybrid 0x7f070004
-int id infoMap 0x7f070030
 int id info_description_textview 0x7f070031
 int id info_endingtime_textview 0x7f070033
+int id info_map 0x7f070030
 int id info_startingtime_textview 0x7f070032
 int id large 0x7f070012
 int id manualOnly 0x7f070009

@@ -72,13 +72,15 @@ public class NewEventActivity extends LocationAwareActivity {
 	private Marker radiusMarker;// The map marker used to indicate the radius of
 								// the event.
 
-	public final static double DEFAULT_EVENT_RADIUS = 0.001;// The default
+	public static final double DEFAULT_EVENT_RADIUS = 0.001;// The default
 															// radius of the
 															// event as
 															// expressed in
 															// longitude/latitude
-	public final static int DEFAULT_ZOOM_LEVEL = 15;// The default zoom level of
+	public static final int DEFAULT_ZOOM_LEVEL = 15;// The default zoom level of
 													// the map.
+	public static final int EVENT_AREA_STROKE_COLOR = Color.GRAY;
+	public static final int EVENT_AREA_FILL_COLOR = Color.argb(100, 100, 100, 100);
 
 	/**
 	 * The {@link ViewPager} that will host the section contents.
@@ -131,11 +133,12 @@ public class NewEventActivity extends LocationAwareActivity {
 		// Zoom to the location of the user
 		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerPoint,
 				DEFAULT_ZOOM_LEVEL));
-
+		
 		// Create the circle that represents the event area.
 		CircleOptions circleOptions = new CircleOptions().center(centerPoint)
 				.radius(Utility.distance(centerPoint, radiusPoint)) // In meters
-				.strokeWidth((float) 4).strokeColor(Color.WHITE);
+				.strokeWidth((float) 4).strokeColor(EVENT_AREA_STROKE_COLOR)
+				.fillColor(EVENT_AREA_FILL_COLOR);
 		final Circle circle = mMap.addCircle(circleOptions);
 
 		// Create the polyline that indicates the radius when the user is moving
@@ -376,8 +379,6 @@ public class NewEventActivity extends LocationAwareActivity {
 			endingTime.setOnClickListener(new DateTimeOnClickListener(ending));
 			return rootView;
 		}
-		
-		 
 	}
 
 	/**

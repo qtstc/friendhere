@@ -354,13 +354,13 @@ public class EventActivity extends LocationAwareActivity implements
 			
 			// Zoom to the location of the user
 			map.moveCamera(CameraUpdateFactory.newLatLngZoom(centerPoint,
-					NewEventActivity.DEFAULT_ZOOM_LEVEL));
+					CustomMapFragment.DEFAULT_ZOOM_LEVEL));
 			
 			// Create the circle that represents the event area.
 			CircleOptions circleOptions = new CircleOptions().center(centerPoint)
 					.radius(event.getInt(ParseContract.Event.RADIUS)) // In meters
-					.strokeWidth((float) 4).strokeColor(NewEventActivity.EVENT_AREA_STROKE_COLOR)
-					.fillColor(NewEventActivity.EVENT_AREA_FILL_COLOR);
+					.strokeWidth((float) 4).strokeColor(CustomMapFragment.EVENT_AREA_STROKE_COLOR)
+					.fillColor(CustomMapFragment.EVENT_AREA_FILL_COLOR);
 			map.addCircle(circleOptions);
 			
 			

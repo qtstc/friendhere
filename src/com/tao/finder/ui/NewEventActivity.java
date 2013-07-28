@@ -55,7 +55,7 @@ import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-public class NewEventActivity extends LocationAwareActivity {
+public class NewEventActivity extends LocationAwareActivity implements CustomMapFragment.OnCreatedListener{
 
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -77,11 +77,6 @@ public class NewEventActivity extends LocationAwareActivity {
 															// event as
 															// expressed in
 															// longitude/latitude
-	public static final int DEFAULT_ZOOM_LEVEL = 15;// The default zoom level of
-													// the map.
-	public static final int EVENT_AREA_STROKE_COLOR = Color.GRAY;
-	public static final int EVENT_AREA_FILL_COLOR = Color.argb(100, 100, 100, 100);
-
 	/**
 	 * The {@link ViewPager} that will host the section contents.
 	 */
@@ -115,7 +110,7 @@ public class NewEventActivity extends LocationAwareActivity {
 	@Override
 	public void onConnected(Bundle arg0) {
 		// Get the map shown in the fragment.
-		final GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager()
+		final GoogleMap mMap = ((CustomMapFragment) getSupportFragmentManager()
 				.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 0)))
 				.getMap();
 		// Change the display settings of the map.
@@ -132,13 +127,13 @@ public class NewEventActivity extends LocationAwareActivity {
 
 		// Zoom to the location of the user
 		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerPoint,
-				DEFAULT_ZOOM_LEVEL));
+				CustomMapFragment.DEFAULT_ZOOM_LEVEL));
 		
 		// Create the circle that represents the event area.
 		CircleOptions circleOptions = new CircleOptions().center(centerPoint)
 				.radius(Utility.distance(centerPoint, radiusPoint)) // In meters
-				.strokeWidth((float) 4).strokeColor(EVENT_AREA_STROKE_COLOR)
-				.fillColor(EVENT_AREA_FILL_COLOR);
+				.strokeWidth((float) 4).strokeColor(CustomMapFragment.EVENT_AREA_STROKE_COLOR)
+				.fillColor(CustomMapFragment.EVENT_AREA_FILL_COLOR);
 		final Circle circle = mMap.addCircle(circleOptions);
 
 		// Create the polyline that indicates the radius when the user is moving
@@ -283,10 +278,7 @@ public class NewEventActivity extends LocationAwareActivity {
 
 			switch (position) {
 			case 0:
-				fragment = new SupportMapFragment();
-				if (!(mLocationClient.isConnected() || mLocationClient
-						.isConnecting()))
-					mLocationClient.connect();
+				fragment = new CustomMapFragment();
 				break;
 			case 1:
 				fragment = new NewEventFormFragment();
@@ -437,5 +429,12 @@ public class NewEventActivity extends LocationAwareActivity {
 			dialog.show();
 		}
 
+	}
+
+	@Override
+	public void onMapCreated() {
+		if (!(mLocationClient.isConnected() || mLocationClient
+				.isConnecting()))
+			mLocationClient.connect();
 	}
 }

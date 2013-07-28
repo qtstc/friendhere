@@ -6,6 +6,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.tao.finder.R;
+import com.tao.finder.logic.Utility;
 import com.tao.finder.ui.NewEventActivity.NewEventFormFragment;
 
 import android.app.ActionBar;
@@ -24,7 +25,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 public class PersonActivity extends FragmentActivity implements
-		ActionBar.TabListener {
+		ActionBar.TabListener, CustomMapFragment.OnCreatedListener {
 
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -124,18 +125,19 @@ public class PersonActivity extends FragmentActivity implements
 
 			switch (position) {
 			case 0:
-				fragment = new SupportMapFragment();
+				fragment = new CustomMapFragment();
 //				if (!(mLocationClient.isConnected() || mLocationClient
 //						.isConnecting()))
 //					mLocationClient.connect();
-				SupportMapFragment mapFrag = (SupportMapFragment)fragment;
-				GoogleMap mMap = mapFrag.getMap();
-				if(mMap != null)
-				{
-					UiSettings settings = mMap.getUiSettings();
-				}
-				else
-					Log.e("It's null!","what?");
+				
+//				SupportMapFragment mapFrag = (SupportMapFragment)fragment;
+//				GoogleMap mMap = mapFrag.getMap();
+//				if(mMap != null)
+//				{
+//					UiSettings settings = mMap.getUiSettings();
+//				}
+//				else
+//					Log.e("It's null!","what?");
 				break;
 			case 1:
 				fragment = new PersonInfoFragment();
@@ -183,6 +185,17 @@ public class PersonActivity extends FragmentActivity implements
 			View rootView = inflater.inflate(R.layout.fragment_person_info,
 					container, false);
 			return rootView;
+		}
+	}
+
+	@Override
+	public void onMapCreated() {
+		GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager()
+				.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 0)))
+				.getMap();
+		if(mMap != null)
+		{
+			mMap.setMyLocationEnabled(true);
 		}
 	}
 

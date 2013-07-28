@@ -26,6 +26,7 @@ import com.tao.finder.logic.LocationUtils;
 import com.tao.finder.logic.ParseContract;
 import com.tao.finder.logic.SuggestionProvider;
 import com.tao.finder.logic.Utility;
+import com.tao.finder.ui.NewEventActivity.NewEventMapFragment;
 import com.tao.finder.ui.SearchListFragment.OnSearchListener;
 
 import android.app.ActionBar;
@@ -92,20 +93,18 @@ public class EventActivity extends LocationAwareActivity implements
 		initializeLocationRequest();
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_event);
-		initializeTabs();
 		handleIntent(getIntent());
 	}
 
 	/**
-	 * Initialize the location location request instance
-	 * used for periodical updates.
+	 * Initialize the location location request instance used for periodical
+	 * updates.
 	 */
 	private void initializeLocationRequest() {
 		// Create a new global location parameters object
 		mLocationRequest = LocationRequest.create();
 		// Set the update interval
-		mLocationRequest
-				.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
+		mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
 
 		// Use high accuracy
 		mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -114,7 +113,16 @@ public class EventActivity extends LocationAwareActivity implements
 		mLocationRequest
 				.setFastestInterval(FAST_INTERVAL_CEILING_IN_MILLISECONDS);
 	}
-	
+
+	@Override
+	public void onConnected(Bundle arg0) {
+		super.onConnected(arg0);
+		setTitle(event.getString(ParseContract.Event.NAME));
+		initializeTabs();
+		//TODO: this is where all the initialization work finishes,
+		//enable the UI which is disabled during initialization.
+	}
+
 	@Override
 	protected void onStop() {
 		super.onStop();
@@ -145,7 +153,7 @@ public class EventActivity extends LocationAwareActivity implements
 		// Create the adapter that will return a fragment for each of the two
 		// primary sections of the app.
 		mSectionsPagerAdapter = new SectionsPagerAdapter(
-				getSupportFragmentManager());
+				getSupportFragmentManager(), event);
 
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -261,8 +269,11 @@ public class EventActivity extends LocationAwareActivity implements
 	 */
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-		public SectionsPagerAdapter(FragmentManager fm) {
+		ParseObject event;
+
+		public SectionsPagerAdapter(FragmentManager fm, ParseObject event) {
 			super(fm);
+			this.event = event;
 		}
 
 		@Override
@@ -272,7 +283,7 @@ public class EventActivity extends LocationAwareActivity implements
 			switch (position) {
 			// TODO:Set tab 0 as the EventInfoFragment.
 			case 0:
-				fragment = new EventInfoFragment();
+				fragment = EventInfoFragment.newInstance(event);
 				break;
 			// Set tab 1 as the PersonSearchFragment.
 			case 1:
@@ -302,69 +313,85 @@ public class EventActivity extends LocationAwareActivity implements
 		}
 	}
 
-	
-	public static class EventInfoMapFragment extends SupportMapFragment
-	{
-		
-	}
-	
-	public static class EventInfoFragment extends Fragment{
-		public EventInfoFragment(){
-			
+	public static class EventInfoFragment extends Fragment {
+
+		private static final String STARTING_TIME_KEY = "starting_time_key";
+		private static final String ENDING_TIME_KEY = "ending_time_key";
+		private static final String DESCRIPTION_KEY = "description_key";
+		private static final String CENTER_LOCATION_KEY = "center_location_key";
+		private static final String RADIUS_KEY = "radius_key";
+
+		public static EventInfoFragment newInstance(ParseObject event) {
+			EventInfoFragment frag = new EventInfoFragment();
+			Bundle args = new Bundle();
+			args.putString(STARTING_TIME_KEY, Utility.dateToString(event
+					.getDate(ParseContract.Event.STARTING_TIME)));
+			args.putString(ENDING_TIME_KEY, Utility.dateToString(event
+					.getDate(ParseContract.Event.ENDING_TIME)));
+			args.putString(DESCRIPTION_KEY,
+					event.getString(ParseContract.Event.DESCRIPTION));
+			args.putParcelable(CENTER_LOCATION_KEY, Utility.toLatLng(event
+					.getParseGeoPoint(ParseContract.Event.LOCATION)));
+			args.putInt(RADIUS_KEY, event.getInt(ParseContract.Event.RADIUS));
+			frag.setArguments(args);
+
+			return frag;
 		}
-		
+
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 			View rootView = inflater.inflate(R.layout.fragment_event_info,
 					container, false);
-			return rootView;
-		}
-		
-		/**
-		 * Populate the GUI with event information.
-		 * To be called after the fragment is created.
-		 * @param event 
-		 */
-		public void setContent(ParseObject event)
-		{
-			View rootView = getView();
-			SupportMapFragment frag = (SupportMapFragment)getFragmentManager().findFragmentById(R.id.info_map);
+
+			Bundle args = getArguments();
+			// Initialize view
+			SupportMapFragment frag = (SupportMapFragment) getFragmentManager()
+					.findFragmentById(R.id.info_map);
 			GoogleMap map = frag.getMap();
-			
+
 			// Change the display settings of the map.
 			UiSettings settings = map.getUiSettings();
 			settings.setCompassEnabled(true);
 			map.setMyLocationEnabled(true);
-			//settings.setMyLocationButtonEnabled(true);//Not necessary?
-			
-			LatLng centerPoint = Utility.toLatLng(event.getParseGeoPoint(ParseContract.Event.LOCATION));
-			
+			// settings.setMyLocationButtonEnabled(true);//Not necessary?
+
+			LatLng centerPoint = (LatLng) args
+					.getParcelable(CENTER_LOCATION_KEY);
+
 			// Zoom to the location of the user
 			map.moveCamera(CameraUpdateFactory.newLatLngZoom(centerPoint,
 					CustomMapFragment.DEFAULT_ZOOM_LEVEL));
-			
+
 			// Create the circle that represents the event area.
-			CircleOptions circleOptions = new CircleOptions().center(centerPoint)
-					.radius(event.getInt(ParseContract.Event.RADIUS)) // In meters
-					.strokeWidth((float) 4).strokeColor(CustomMapFragment.EVENT_AREA_STROKE_COLOR)
+			CircleOptions circleOptions = new CircleOptions()
+					.center(centerPoint)
+					.radius(args.getInt(RADIUS_KEY))
+					// In meters
+					.strokeWidth((float) 4)
+					.strokeColor(CustomMapFragment.EVENT_AREA_STROKE_COLOR)
 					.fillColor(CustomMapFragment.EVENT_AREA_FILL_COLOR);
 			map.addCircle(circleOptions);
-			
-			
-			TextView description = (TextView)rootView.findViewById(R.id.info_description_textview);
-			description.setText(event.getString(ParseContract.Event.DESCRIPTION));
-			TextView startingTime = (TextView)rootView.findViewById(R.id.info_startingtime_textview);
-			TextView endingTime = (TextView)rootView.findViewById(R.id.info_endingtime_textview);
-			startingTime.setText(getString(R.string.start_at)+" "+Utility.dateToString(event.getDate(ParseContract.Event.STARTING_TIME)));
-			endingTime.setText(getString(R.string.end_at)+" "+Utility.dateToString(event.getDate(ParseContract.Event.ENDING_TIME)));
+
+			TextView description = (TextView) rootView
+					.findViewById(R.id.info_description_textview);
+			description.setText(args.getString(DESCRIPTION_KEY));
+			TextView startingTime = (TextView) rootView
+					.findViewById(R.id.info_startingtime_textview);
+			TextView endingTime = (TextView) rootView
+					.findViewById(R.id.info_endingtime_textview);
+			startingTime.setText(getString(R.string.start_at) + " "
+					+ args.getString(STARTING_TIME_KEY));
+			endingTime.setText(getString(R.string.end_at) + " "
+					+ args.getString(ENDING_TIME_KEY));
+
+			return rootView;
 		}
 	}
 
 	/**
-	 * Handles intents used to invoke this activity. If the intent contains an
-	 * object_id for event, load the event info from the server. If the intent
-	 * contains a search action, this method starts the search.
+	 * Handles intents used to invoke this activity. If the intent contains a
+	 * search action, this method starts the search.
 	 * 
 	 * @param intent
 	 *            the intent sent to this activity.
@@ -377,47 +404,38 @@ public class EventActivity extends LocationAwareActivity implements
 					new GetCallback<ParseObject>() {
 
 						@Override
-						public void done(ParseObject object, ParseException e) {
+						public void done(final ParseObject object, ParseException e) {
 							event = object;
-							setTitle(event.getString(ParseContract.Event.NAME));
-							EventInfoFragment frag = (EventInfoFragment) getSupportFragmentManager()
-									.findFragmentByTag(Utility.getFragmentTag(R.id.pager,0));
-							frag.setContent(event);
-						}
-					});
-			if (ParseUser.getCurrentUser() == null) {
-				checkin = null;
-				return;
-			}
-			ParseContract.Checkin.getCheckin(ParseUser.getCurrentUser(), event,
-					new FindCallback<ParseObject>() {
-
-						@Override
-						public void done(List<ParseObject> objects,
-								ParseException e) {
-							if (objects.size() == 0)
+							if (ParseUser.getCurrentUser() == null) {
 								checkin = null;
-							else {
-								invalidateOptionsMenu();
-								checkin = objects.get(0);
+								return;
 							}
-							// Only connect after the checkin is initialized
-							// because
-							// we need to start/stop background location tracker
-							// in onConnecte().
-							// based on the status of checkin.
-							mLocationClient.connect();
+							ParseContract.Checkin.getCheckin(ParseUser.getCurrentUser(), event,
+									new FindCallback<ParseObject>() {
+
+										@Override
+										public void done(List<ParseObject> objects,
+												ParseException e) {
+											if (objects.size() == 0)
+												checkin = null;
+											else {
+												invalidateOptionsMenu();
+												checkin = objects.get(0);
+											}
+											mLocationClient.connect();
+										}
+									});
+							return;
 						}
 					});
-			return;
 		}
-		// initializeTabs();
+		
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
 			String searchString = intent.getStringExtra(SearchManager.QUERY)
 					.trim();
 			// use the query to search data
 			PersonSearchFragment frag = (PersonSearchFragment) getSupportFragmentManager()
-					.findFragmentByTag(Utility.getFragmentTag(R.id.pager,1));
+					.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 1));
 			frag.newSearch(searchString, event.getObjectId());
 			// Adds the current search to the search history.
 			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(

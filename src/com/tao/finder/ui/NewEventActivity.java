@@ -55,7 +55,7 @@ import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-public class NewEventActivity extends LocationAwareActivity implements CustomMapFragment.OnCreatedListener{
+public class NewEventActivity extends LocationAwareActivity {
 
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -66,11 +66,6 @@ public class NewEventActivity extends LocationAwareActivity implements CustomMap
 	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
 	 */
 	SectionsPagerAdapter mSectionsPagerAdapter;
-
-	private Marker centerMarker;// The map marker used to indicate the center of
-								// the event.
-	private Marker radiusMarker;// The map marker used to indicate the radius of
-								// the event.
 
 	public static final double DEFAULT_EVENT_RADIUS = 0.001;// The default
 															// radius of the
@@ -87,11 +82,22 @@ public class NewEventActivity extends LocationAwareActivity implements CustomMap
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_new_event);
-
+		
+		if (!(mLocationClient.isConnected() || mLocationClient
+				.isConnecting()))
+			mLocationClient.connect();
+	}
+	
+	/**
+	 * Initialize the pager used to allow the user to create a new event.
+	 * @param currentLocation the current location of the user, used to initialize the map.
+	 */
+	private void initializePager(LatLng currentLocation)
+	{
 		// Create the adapter that will return a fragment for each of the three
 		// primary sections of the app.
 		mSectionsPagerAdapter = new SectionsPagerAdapter(
-				getSupportFragmentManager());
+				getSupportFragmentManager(),currentLocation);
 
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -109,93 +115,9 @@ public class NewEventActivity extends LocationAwareActivity implements CustomMap
 	 */
 	@Override
 	public void onConnected(Bundle arg0) {
-		// Get the map shown in the fragment.
-		final GoogleMap mMap = ((CustomMapFragment) getSupportFragmentManager()
-				.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 0)))
-				.getMap();
-		// Change the display settings of the map.
-		UiSettings settings = mMap.getUiSettings();
-		settings.setCompassEnabled(true);
-
-		// Get the current location of the user,
-		// use it as the default event location,
-		// and give the location a default radius.
 		Location l = mLocationClient.getLastLocation();
 		LatLng centerPoint = Utility.toLatLng(l);
-		LatLng radiusPoint = new LatLng(l.getLatitude() + DEFAULT_EVENT_RADIUS,
-				l.getLongitude());
-
-		// Zoom to the location of the user
-		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerPoint,
-				CustomMapFragment.DEFAULT_ZOOM_LEVEL));
-		
-		// Create the circle that represents the event area.
-		CircleOptions circleOptions = new CircleOptions().center(centerPoint)
-				.radius(Utility.distance(centerPoint, radiusPoint)) // In meters
-				.strokeWidth((float) 4).strokeColor(CustomMapFragment.EVENT_AREA_STROKE_COLOR)
-				.fillColor(CustomMapFragment.EVENT_AREA_FILL_COLOR);
-		final Circle circle = mMap.addCircle(circleOptions);
-
-		// Create the polyline that indicates the radius when the user is moving
-		// the markers around
-		PolylineOptions polyLineOptions = new PolylineOptions()
-				.add(centerPoint).add(radiusPoint).width((float) 4)
-				.color(Color.WHITE).visible(false);
-		final Polyline line = mMap.addPolyline(polyLineOptions);
-
-		// Create the marker that represents the center
-		centerMarker = mMap.addMarker(new MarkerOptions()
-				.position(centerPoint)
-				.draggable(true)
-				.icon(BitmapDescriptorFactory
-						.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-
-		// Create the marker that represents the radius
-		radiusMarker = mMap.addMarker(new MarkerOptions()
-				.draggable(true)
-				.position(radiusPoint)
-				.icon(BitmapDescriptorFactory
-						.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
-
-		mMap.setOnMarkerDragListener(new OnMarkerDragListener() {
-
-			@Override
-			public void onMarkerDragStart(Marker arg0) {
-				// Hide circle show marker.
-				updateLine();
-				circle.setVisible(false);
-				line.setVisible(true);
-			}
-
-			@Override
-			public void onMarkerDragEnd(Marker arg0) {
-				// Update circle, show circle, hide marker
-				circle.setCenter(centerMarker.getPosition());
-				circle.setRadius(Utility.distance(centerMarker.getPosition(),
-						radiusMarker.getPosition()));
-				circle.setVisible(true);
-				line.setVisible(false);
-				mMap.animateCamera(CameraUpdateFactory.newLatLng(centerMarker
-						.getPosition()));
-			}
-
-			@Override
-			public void onMarkerDrag(Marker arg0) {
-				updateLine();
-			}
-
-			/**
-			 * Update the PolyLine that helps the user visualize the radius when
-			 * moving markers. It changes the two end points to be the location
-			 * of the two markers.
-			 */
-			private void updateLine() {
-				LinkedList<LatLng> l = new LinkedList<LatLng>();
-				l.add(centerMarker.getPosition());
-				l.add(radiusMarker.getPosition());
-				line.setPoints(l);
-			}
-		});
+		initializePager(centerPoint);
 	}
 
 	@Override
@@ -208,22 +130,24 @@ public class NewEventActivity extends LocationAwareActivity implements CustomMap
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_create_event:
-			NewEventFormFragment frag = (NewEventFormFragment) getSupportFragmentManager()
+			NewEventMapFragment mapFrag = (NewEventMapFragment) getSupportFragmentManager()
+			.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 0));
+			NewEventFormFragment formFrag = (NewEventFormFragment) getSupportFragmentManager()
 					.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 1));
 
 			// Validate user input.
 			String errorMessage = "";
-			Date start = frag.getStartingTime();
-			Date end = frag.getEndingTime();
+			Date start = formFrag.getStartingTime();
+			Date end = formFrag.getEndingTime();
 			if (start.after(end))
 				errorMessage += "\n" + getText(R.string.starting_time_too_late);
 			if (end.before(Calendar.getInstance().getTime()))
 				errorMessage += "\n" + getText(R.string.ending_time_too_early);
 
-			String name = frag.getName().trim();
+			String name = formFrag.getName().trim();
 			if (name.equals(""))
 				errorMessage += "\n" + getText(R.string.empty_name);
-			String description = frag.getDescription().trim();
+			String description = formFrag.getDescription().trim();
 
 			errorMessage = errorMessage.trim();
 			if (!errorMessage.isEmpty()) {
@@ -231,11 +155,10 @@ public class NewEventActivity extends LocationAwareActivity implements CustomMap
 				return true;
 			}
 			setProgressBarIndeterminateVisibility(true);
+			LatLng centerPosition = mapFrag.getCenterPosition();
 			ParseContract.Event.createEvent(ParseUser.getCurrentUser(), name,
-					start, end, centerMarker.getPosition().longitude,
-					centerMarker.getPosition().latitude, (int) Utility
-							.distance(centerMarker.getPosition(),
-									radiusMarker.getPosition()), description,
+					start, end, centerPosition.longitude,
+					centerPosition.latitude, mapFrag.getRadius(), description,
 					new SaveCallback() {
 						@Override
 						public void done(ParseException e) {
@@ -267,8 +190,16 @@ public class NewEventActivity extends LocationAwareActivity implements CustomMap
 	 */
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-		public SectionsPagerAdapter(FragmentManager fm) {
+		private LatLng userLocation;
+		
+		/**
+		 * Constructor
+		 * @param fm
+		 * @param userLocation the current location of the user, to be passed to the NewEventMapFragment to initialize the map.
+		 */
+		public SectionsPagerAdapter(FragmentManager fm, LatLng userLocation) {
 			super(fm);
+			this.userLocation = userLocation;
 		}
 
 		@Override
@@ -278,14 +209,13 @@ public class NewEventActivity extends LocationAwareActivity implements CustomMap
 
 			switch (position) {
 			case 0:
-				fragment = new CustomMapFragment();
+				fragment = NewEventMapFragment.newInstance(userLocation);
 				break;
 			case 1:
 				fragment = new NewEventFormFragment();
 				break;
 			default:
 			}
-
 			return fragment;
 		}
 
@@ -308,6 +238,145 @@ public class NewEventActivity extends LocationAwareActivity implements CustomMap
 	}
 
 	/**
+	 * A MapFragment that allows the user to choose the center and radius of an event.
+	 * @author Tao Qian(taoqian_2015@depauw.edu)
+	 *
+	 */
+	public static class NewEventMapFragment extends SupportMapFragment{
+		
+		private static final String USER_LOCATION_KEY = "user_location_key";
+		private Marker centerMarker;// The map marker used to indicate the center of the event.
+		private Marker radiusMarker;// The map marker used to indicate the radius of the event.
+		
+		/**
+		 * Get a new instance
+		 * @param latlng the current location of the user.
+		 * @return 
+		 */
+		public static NewEventMapFragment newInstance(LatLng latlng)
+		{
+			 NewEventMapFragment frag = new NewEventMapFragment();
+
+			    Bundle args = new Bundle();
+			    args.putParcelable(USER_LOCATION_KEY, latlng);
+			    frag.setArguments(args);
+			    return frag;
+		}
+
+		/**
+		 * Get the center position of the event.
+		 * @return 
+		 */
+		public LatLng getCenterPosition()
+		{
+			return centerMarker.getPosition();
+		}
+		
+		/**
+		 * Get the radius of the event in meters.
+		 * @return
+		 */
+		public int  getRadius()
+		{
+			return (int) Utility
+			.distance(centerMarker.getPosition(),
+					radiusMarker.getPosition());
+		}
+		
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+				Bundle savedInstanceState) {
+			View v = super.onCreateView(inflater, container, savedInstanceState);
+			
+			//We initialize the map here.
+			final GoogleMap mMap = getMap();
+			
+			// Change the display settings of the map.
+			UiSettings settings = mMap.getUiSettings();
+			settings.setCompassEnabled(true);
+
+			LatLng centerPoint = getArguments().getParcelable(USER_LOCATION_KEY);
+			LatLng radiusPoint = new LatLng(centerPoint.latitude + DEFAULT_EVENT_RADIUS,
+					centerPoint.longitude);
+
+			// Zoom to the location of the user
+			mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerPoint,
+					CustomMapFragment.DEFAULT_ZOOM_LEVEL));
+			
+			// Create the circle that represents the event area.
+			CircleOptions circleOptions = new CircleOptions().center(centerPoint)
+					.radius(Utility.distance(centerPoint, radiusPoint)) // In meters
+					.strokeWidth((float) 4).strokeColor(CustomMapFragment.EVENT_AREA_STROKE_COLOR)
+					.fillColor(CustomMapFragment.EVENT_AREA_FILL_COLOR);
+			final Circle circle = mMap.addCircle(circleOptions);
+
+			// Create the polyline that indicates the radius when the user is moving
+			// the markers around
+			PolylineOptions polyLineOptions = new PolylineOptions()
+					.add(centerPoint).add(radiusPoint).width((float) 4)
+					.color(Color.WHITE).visible(false);
+			final Polyline line = mMap.addPolyline(polyLineOptions);
+
+			// Create the marker that represents the center
+			centerMarker = mMap.addMarker(new MarkerOptions()
+					.position(centerPoint)
+					.draggable(true)
+					.icon(BitmapDescriptorFactory
+							.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+
+			// Create the marker that represents the radius
+			radiusMarker = mMap.addMarker(new MarkerOptions()
+					.draggable(true)
+					.position(radiusPoint)
+					.icon(BitmapDescriptorFactory
+							.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
+
+			mMap.setOnMarkerDragListener(new OnMarkerDragListener() {
+
+				@Override
+				public void onMarkerDragStart(Marker arg0) {
+					// Hide circle show marker.
+					updateLine();
+					circle.setVisible(false);
+					line.setVisible(true);
+				}
+
+				@Override
+				public void onMarkerDragEnd(Marker arg0) {
+					// Update circle, show circle, hide marker
+					circle.setCenter(centerMarker.getPosition());
+					circle.setRadius(Utility.distance(centerMarker.getPosition(),
+							radiusMarker.getPosition()));
+					circle.setVisible(true);
+					line.setVisible(false);
+					mMap.animateCamera(CameraUpdateFactory.newLatLng(centerMarker
+							.getPosition()));
+				}
+
+				@Override
+				public void onMarkerDrag(Marker arg0) {
+					updateLine();
+				}
+
+				/**
+				 * Update the PolyLine that helps the user visualize the radius when
+				 * moving markers. It changes the two end points to be the location
+				 * of the two markers.
+				 */
+				private void updateLine() {
+					LinkedList<LatLng> l = new LinkedList<LatLng>();
+					l.add(centerMarker.getPosition());
+					l.add(radiusMarker.getPosition());
+					line.setPoints(l);
+				}
+			});
+			
+			return v;
+		}
+		
+	}
+	
+	/**
 	 * Fragment that allows the user to type in the information related to a new
 	 * event.
 	 * 
@@ -315,9 +384,6 @@ public class NewEventActivity extends LocationAwareActivity implements CustomMap
 	 * 
 	 */
 	public static class NewEventFormFragment extends Fragment {
-
-		public NewEventFormFragment() {
-		}
 
 		private Calendar starting;
 		private Calendar ending;
@@ -401,7 +467,7 @@ public class NewEventActivity extends LocationAwareActivity implements CustomMap
 					.findViewById(R.id.datePicker);
 			final TimePicker timePicker = (TimePicker) dialogView
 					.findViewById(R.id.timePicker);
-			datePicker.getCalendarView().setDate(c.getTimeInMillis());
+			datePicker.updateDate(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
 			timePicker.setCurrentHour(c.get(Calendar.HOUR_OF_DAY));
 			timePicker.setCurrentMinute(c.get(Calendar.MINUTE));
 			datePicker.setCalendarViewShown(false);
@@ -414,8 +480,9 @@ public class NewEventActivity extends LocationAwareActivity implements CustomMap
 
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
-							c.setTimeInMillis(datePicker.getCalendarView()
-									.getDate());
+							c.set(Calendar.YEAR, datePicker.getYear());
+							c.set(Calendar.MONTH, datePicker.getMonth());
+							c.set(Calendar.DAY_OF_MONTH, datePicker.getDayOfMonth());
 							c.set(Calendar.HOUR_OF_DAY,
 									timePicker.getCurrentHour());
 							c.set(Calendar.MINUTE,
@@ -429,12 +496,5 @@ public class NewEventActivity extends LocationAwareActivity implements CustomMap
 			dialog.show();
 		}
 
-	}
-
-	@Override
-	public void onMapCreated() {
-		if (!(mLocationClient.isConnected() || mLocationClient
-				.isConnecting()))
-			mLocationClient.connect();
 	}
 }

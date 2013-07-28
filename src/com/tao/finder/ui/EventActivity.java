@@ -302,6 +302,12 @@ public class EventActivity extends LocationAwareActivity implements
 		}
 	}
 
+	
+	public static class EventInfoMapFragment extends SupportMapFragment
+	{
+		
+	}
+	
 	public static class EventInfoFragment extends Fragment{
 		public EventInfoFragment(){
 			

@@ -2,7 +2,12 @@ package com.tao.finder.ui;
 
 import java.util.Locale;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
 import com.tao.finder.R;
+import com.tao.finder.ui.NewEventActivity.NewEventFormFragment;
+
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
@@ -11,6 +16,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
@@ -114,19 +120,36 @@ public class PersonActivity extends FragmentActivity implements
 		@Override
 		public Fragment getItem(int position) {
 			// getItem is called to instantiate the fragment for the given page.
-			// Return a DummySectionFragment (defined as a static inner class
-			// below) with the page number as its lone argument.
-			Fragment fragment = new DummySectionFragment();
-			Bundle args = new Bundle();
-			args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
-			fragment.setArguments(args);
+			Fragment fragment = null;
+
+			switch (position) {
+			case 0:
+				fragment = new SupportMapFragment();
+//				if (!(mLocationClient.isConnected() || mLocationClient
+//						.isConnecting()))
+//					mLocationClient.connect();
+				SupportMapFragment mapFrag = (SupportMapFragment)fragment;
+				GoogleMap mMap = mapFrag.getMap();
+				if(mMap != null)
+				{
+					UiSettings settings = mMap.getUiSettings();
+				}
+				else
+					Log.e("It's null!","what?");
+				break;
+			case 1:
+				fragment = new PersonInfoFragment();
+				break;
+			default:
+			}
+
 			return fragment;
 		}
 
 		@Override
 		public int getCount() {
 			// Show 3 total pages.
-			return 3;
+			return 2;
 		}
 
 		@Override
@@ -134,39 +157,31 @@ public class PersonActivity extends FragmentActivity implements
 			Locale l = Locale.getDefault();
 			switch (position) {
 			case 0:
-				return getString(R.string.title_section1).toUpperCase(l);
+				return getString(R.string.location).toUpperCase(l);
 			case 1:
-				return getString(R.string.title_section2).toUpperCase(l);
-			case 2:
-				return getString(R.string.title_section3).toUpperCase(l);
+				return getString(R.string.contact).toUpperCase(l);
 			}
 			return null;
 		}
 	}
 
 	/**
-	 * A dummy fragment representing a section of the app, but that simply
-	 * displays dummy text.
+	 * A fragment that contains the information of the 
+	 * person.
+	 * 
+	 * @author Tao Qian(taoqian_2015@depauw.edu)
+	 *
 	 */
-	public static class DummySectionFragment extends Fragment {
-		/**
-		 * The fragment argument representing the section number for this
-		 * fragment.
-		 */
-		public static final String ARG_SECTION_NUMBER = "section_number";
+	public static class PersonInfoFragment extends Fragment {
 
-		public DummySectionFragment() {
+		public PersonInfoFragment() {
 		}
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_person_dummy,
+			View rootView = inflater.inflate(R.layout.fragment_person_info,
 					container, false);
-			TextView dummyTextView = (TextView) rootView
-					.findViewById(R.id.section_label);
-			dummyTextView.setText(Integer.toString(getArguments().getInt(
-					ARG_SECTION_NUMBER)));
 			return rootView;
 		}
 	}

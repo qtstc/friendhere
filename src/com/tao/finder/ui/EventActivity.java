@@ -312,9 +312,9 @@ public class EventActivity extends LocationAwareActivity implements
 			Locale l = Locale.getDefault();
 			switch (position) {
 			case 0:
-				return getString(R.string.event_info).toUpperCase(l);
+				return getString(R.string.info).toUpperCase(l);
 			case 1:
-				return getString(R.string.event_people).toUpperCase(l);
+				return getString(R.string.people).toUpperCase(l);
 			}
 			return null;
 		}
@@ -347,7 +347,8 @@ public class EventActivity extends LocationAwareActivity implements
 			// Change the display settings of the map.
 			UiSettings settings = map.getUiSettings();
 			settings.setCompassEnabled(true);
-			settings.setMyLocationButtonEnabled(true);
+			map.setMyLocationEnabled(true);
+			//settings.setMyLocationButtonEnabled(true);//Not necessary?
 			
 			LatLng centerPoint = Utility.toLatLng(event.getParseGeoPoint(ParseContract.Event.LOCATION));
 			

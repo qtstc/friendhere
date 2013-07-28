@@ -8,17 +8,18 @@
     <string name="action_search">Search</string>
     <string name="action_new_event">New event</string>
     <string name="title_activity_event">Event</string>
-    <string name="event_info">info</string>
-    <string name="event_people">people</string>
+    <string name="info">info</string>
+    <string name="people">people</string>
+    <string name="contact">contact</string>
     <string name="title_activity_new_event">New</string>
     <string name="start_at">Start at</string>
     <string name="end_at">End at</string>
     <string name="event_name">Event name</string>
     <string name="event_description">Event description</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
-    <string name="location">Location</string>
-    <string name="detail">Detail</string>
+    <string name="location">location</string>
+    <string name="detail">detail</string>
     
     <!-- New event validation message -->
     <string name="starting_time_too_late">Starting time cannot be after ending time.</string>
@@ -28,7 +29,6 @@
     <string name="app_id">484510971628209</string>
     <string name = "debug_api_key">AIzaSyCa2N7Mc54UXqrmxrErZpN5gBtJdTMqS30</string>
     
-    <string name="hello_world">Hello world!</string>
     <string name="title_activity_login">Login</string>
     <string name="login">log in</string>
     <string name="logout">log out</string>
@@ -36,9 +36,6 @@
     <string name="action_check_in">check in</string>
     <string name="action_check_out">check out</string>
     <string name="title_activity_person">Person</string>
-    <string name="title_section1">Section 1</string>
-    <string name="title_section2">Section 2</string>
-    <string name="title_section3">Section 3</string>
     
     <!-- Latitude, longitude format -->
     <string name="latitude_longitude">%1$.8f, %2$.8f</string>

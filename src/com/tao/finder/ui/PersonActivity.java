@@ -5,6 +5,8 @@ import java.util.Locale;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
+import com.parse.GetCallback;
+import com.parse.ParseException;
 import com.parse.ParseUser;
 import com.tao.finder.R;
 import com.tao.finder.logic.ParseContract;
@@ -27,7 +29,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 public class PersonActivity extends FragmentActivity implements
-		ActionBar.TabListener, CustomMapFragment.OnCreatedListener {
+		ActionBar.TabListener {
 
 	private ParseUser user;
 	
@@ -51,6 +53,18 @@ public class PersonActivity extends FragmentActivity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_person);
 
+		ParseContract.User.getPersonById(getIntent().getStringExtra(SearchListFragment.OBJECT_ID), new GetCallback<ParseUser>() {
+			
+			@Override
+			public void done(ParseUser object, ParseException e) {
+				user = object;
+				initializeTabs(user);
+			}
+		});
+	}
+
+	private void initializeTabs(ParseUser user)
+	{
 		// Set up the action bar.
 		final ActionBar actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
@@ -58,7 +72,7 @@ public class PersonActivity extends FragmentActivity implements
 		// Create the adapter that will return a fragment for each of the three
 		// primary sections of the app.
 		mSectionsPagerAdapter = new SectionsPagerAdapter(
-				getSupportFragmentManager());
+				getSupportFragmentManager(),user);
 
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -86,7 +100,7 @@ public class PersonActivity extends FragmentActivity implements
 					.setTabListener(this));
 		}
 	}
-
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -118,8 +132,11 @@ public class PersonActivity extends FragmentActivity implements
 	 */
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-		public SectionsPagerAdapter(FragmentManager fm) {
+		ParseUser user;
+		
+		public SectionsPagerAdapter(FragmentManager fm, ParseUser user) {
 			super(fm);
+			this.user = user;
 		}
 
 		@Override
@@ -129,7 +146,7 @@ public class PersonActivity extends FragmentActivity implements
 
 			switch (position) {
 			case 0:
-				fragment = new CustomMapFragment();
+				fragment = TrackingMapFragment.newInstance(user) ;
 //				if (!(mLocationClient.isConnected() || mLocationClient
 //						.isConnecting()))
 //					mLocationClient.connect();
@@ -144,7 +161,7 @@ public class PersonActivity extends FragmentActivity implements
 //					Log.e("It's null!","what?");
 				break;
 			case 1:
-				fragment = new PersonInfoFragment();
+				fragment = PersonInfoFragment.newInstance(user);
 				break;
 			default:
 			}
@@ -180,7 +197,17 @@ public class PersonActivity extends FragmentActivity implements
 	 */
 	public static class PersonInfoFragment extends Fragment {
 
-		public PersonInfoFragment() {
+		private static final String EMAIL_KEY = "email_key";
+		private static final String PHONE_KEY = "phone_key";
+		
+		public static PersonInfoFragment newInstance(ParseUser user)
+		{
+			PersonInfoFragment frag = new PersonInfoFragment();
+			Bundle args = new Bundle();
+		    args.putString(EMAIL_KEY, user.getEmail());
+		    args.putString(PHONE_KEY, user.getString(ParseContract.User.PHONE));
+		    frag.setArguments(args);
+		    return frag;
 		}
 
 		@Override
@@ -188,23 +215,37 @@ public class PersonActivity extends FragmentActivity implements
 				Bundle savedInstanceState) {
 			View rootView = inflater.inflate(R.layout.fragment_person_info,
 					container, false);
+			
+			Bundle args = getArguments();
+			TextView email = (TextView)rootView.findViewById(R.id.person_info_email_textview);
+			TextView phone = (TextView)rootView.findViewById(R.id.person_info_phone_textview);
+			email.setText(args.getString(EMAIL_KEY));
+			phone.setText(args.getString(PHONE_KEY));
 			return rootView;
 		}
 	}
-
-	@Override
-	public void onMapCreated() {
-		GoogleMap mMap = ((SupportMapFragment) getSupportFragmentManager()
-				.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 0)))
-				.getMap();
-		if(mMap != null)
+	
+	public static class TrackingMapFragment extends SupportMapFragment{
+		
+		private static final String USER_OBJECT_ID_KEY = "user_object_id_key";
+		
+		public static TrackingMapFragment newInstance(ParseUser user)
 		{
-			mMap.setMyLocationEnabled(true);
+			TrackingMapFragment frag = new TrackingMapFragment();
+			Bundle args = new Bundle();
+		    args.putString(USER_OBJECT_ID_KEY, user.getObjectId());
+		    frag.setArguments(args);
+		    return frag;
 		}
 		
-		String objectId = getIntent().getStringExtra(SearchListFragment.OBJECT_ID);
-		//ParseContract.User.getPersonById(objectId, )
-		
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+				Bundle savedInstanceState) {
+			View v = super.onCreateView(inflater, container, savedInstanceState);
+			
+			GoogleMap mMap = getMap();
+			mMap.setMyLocationEnabled(true);
+			return v;
+		}
 	}
-
 }

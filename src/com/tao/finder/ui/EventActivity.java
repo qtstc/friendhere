@@ -430,6 +430,7 @@ public class EventActivity extends LocationAwareActivity implements
 					});
 		}
 		
+		//TODO:prevent user from sending search request until frag is initialized.
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
 			String searchString = intent.getStringExtra(SearchManager.QUERY)
 					.trim();

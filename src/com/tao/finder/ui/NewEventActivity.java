@@ -301,13 +301,13 @@ public class NewEventActivity extends LocationAwareActivity {
 
 			// Zoom to the location of the user
 			mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerPoint,
-					CustomMapFragment.DEFAULT_ZOOM_LEVEL));
+					LocationAwareActivity.DEFAULT_ZOOM_LEVEL));
 			
 			// Create the circle that represents the event area.
 			CircleOptions circleOptions = new CircleOptions().center(centerPoint)
 					.radius(Utility.distance(centerPoint, radiusPoint)) // In meters
-					.strokeWidth((float) 4).strokeColor(CustomMapFragment.EVENT_AREA_STROKE_COLOR)
-					.fillColor(CustomMapFragment.EVENT_AREA_FILL_COLOR);
+					.strokeWidth((float) 4).strokeColor(LocationAwareActivity.EVENT_AREA_STROKE_COLOR)
+					.fillColor(LocationAwareActivity.EVENT_AREA_FILL_COLOR);
 			final Circle circle = mMap.addCircle(circleOptions);
 
 			// Create the polyline that indicates the radius when the user is moving

@@ -28,7 +28,12 @@ import android.util.Log;
  */
 public abstract class LocationAwareActivity extends FragmentActivity implements GooglePlayServicesClient.ConnectionCallbacks, GooglePlayServicesClient.OnConnectionFailedListener{
 
-	public final static String TAG = "LocationAwareActivity";
+	public static final String TAG = "LocationAwareActivity";
+	
+	public static final int DEFAULT_ZOOM_LEVEL = 15;// The default zoom level of
+	// the map.
+	public static final int EVENT_AREA_STROKE_COLOR = Color.GRAY;
+	public static final int EVENT_AREA_FILL_COLOR = Color.argb(100, 100, 100,100);
 	
 	// Stores the current instantiation of the location client in this object
 	protected LocationClient mLocationClient;

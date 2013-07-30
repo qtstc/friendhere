@@ -269,7 +269,7 @@ public class PersonActivity extends FragmentActivity implements
 			GoogleMap mMap = getMap();
 			mMap.setMyLocationEnabled(true);
 			mMap.animateCamera(CameraUpdateFactory
-					.zoomTo(CustomMapFragment.DEFAULT_ZOOM_LEVEL));
+					.zoomTo(LocationAwareActivity.DEFAULT_ZOOM_LEVEL));
 			startUpdate(mMap);
 			
 			return v;

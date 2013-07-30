@@ -12,8 +12,6 @@ import com.parse.ParseFacebookUtils;
 import com.parse.ParseFacebookUtils.Permissions;
 import com.parse.ParseUser;
 import com.tao.finder.R;
-import com.tao.finder.R.layout;
-import com.tao.finder.R.menu;
 
 import android.os.Bundle;
 import android.app.Activity;
@@ -106,5 +104,9 @@ public class LoginActivity extends Activity {
 		return true;
 	}
 
-
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		ParseFacebookUtils.finishAuthentication(requestCode, resultCode, data);
+	}
 }

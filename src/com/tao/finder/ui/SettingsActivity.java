@@ -3,6 +3,8 @@ package com.tao.finder.ui;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -22,6 +24,7 @@ import android.util.Log;
 
 import java.util.List;
 
+import com.parse.GetCallback;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
@@ -30,22 +33,32 @@ import com.parse.ParseUser;
 import com.tao.finder.R;
 import com.tao.finder.R.string;
 import com.tao.finder.R.xml;
+import com.tao.finder.logic.ParseContract;
 
 /**
- * A {@link PreferenceActivity} that presents a set of application settings. 
- * Settings are always presented as a single list. 
+ * A {@link PreferenceActivity} that presents a set of application settings.
+ * Settings are always presented as a single list.
  * 
  * @author Tao Qian(taoqian_2015@depauw.edu)
- *
+ * 
  */
 public class SettingsActivity extends PreferenceActivity {
-
 
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);
 
-		setupSimplePreferencesScreen();
+		//First fetch the ParseUser instance.
+		if(ParseUser.getCurrentUser() != null)
+			ParseUser.getCurrentUser().fetchInBackground(new GetCallback<ParseUser>() {
+
+				@Override
+				public void done(ParseUser object, ParseException e) {
+					setupSimplePreferencesScreen();
+				}
+			});
+		else
+			setupSimplePreferencesScreen();
 	}
 
 	/**
@@ -63,77 +76,132 @@ public class SettingsActivity extends PreferenceActivity {
 
 		// Add 'profile' preferences.
 		addPreferencesFromResource(R.xml.pref_profile);
-		
-		
-		
-		findPreference(getResources().getString(R.string.pref_key_login)).setOnPreferenceClickListener(new OnPreferenceClickListener() {
-			
-			@Override
-			public boolean onPreferenceClick(Preference preference) {
-				findPreference(getResources().getString(R.string.pref_key_display_name)).setEnabled(false);
-				findPreference(getResources().getString(R.string.pref_key_email)).setEnabled(false);
-				findPreference(getResources().getString(R.string.pref_key_phone)).setEnabled(false);
-				return false;
-			}
-		});
 
-		// Bind the summaries of EditText/List/Dialog/Ringtone preferences to
-		// their values. When their values change, their summaries are updated
-		// to reflect the new value, per the Android Design guidelines.
-		bindPreferenceSummaryToValue(findPreference(getResources().getString(R.string.pref_key_display_name)));
-		bindPreferenceSummaryToValue(findPreference(getResources().getString(R.string.pref_key_email)));
-		bindPreferenceSummaryToValue(findPreference(getResources().getString(R.string.pref_key_phone)));
+		findPreferenceById(R.string.pref_key_login)
+				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+
+					@Override
+					public boolean onPreferenceClick(Preference preference) {
+						updateSettingsGUI();
+						return true;
+					}
+				});
+
+		findPreferenceById(R.string.pref_key_display_name)
+				.setOnPreferenceChangeListener(
+						new OnParseStringPreferenceChangeListener() {
+
+							@Override
+							public void updateParseUser(String newValue) {
+								ParseUser.getCurrentUser().put(
+										ParseContract.User.NAME, newValue);
+							}
+						});
+		findPreferenceById(R.string.pref_key_email)
+				.setOnPreferenceChangeListener(
+						new OnParseStringPreferenceChangeListener() {
+
+							@Override
+							public void updateParseUser(String newValue) {
+								ParseUser.getCurrentUser().setEmail(newValue);
+							}
+						});
+		findPreferenceById(R.string.pref_key_phone)
+				.setOnPreferenceChangeListener(
+						new OnParseStringPreferenceChangeListener() {
+
+							@Override
+							public void updateParseUser(String newValue) {
+								// TODO Auto-generated method stub
+								ParseUser.getCurrentUser().put(
+										ParseContract.User.PHONE, newValue);
+							}
+						});
+		updateSettingsGUI();
+	}
+
+	/**
+	 * Update the settings preference GUI. It enables/disables the preference
+	 * items depending on the login state of the user. It also updates the GUI
+	 * with the user information.
+	 * 
+	 * Only calls this method after fetching the current user information from
+	 * the server.
+	 */
+	private void updateSettingsGUI() {
+		ParseUser user = ParseUser.getCurrentUser();
+		boolean loggedIn = (user != null);
+
+		// Get the different preferences.
+		Preference displayName = findPreferenceById(R.string.pref_key_display_name);
+		Preference email = findPreferenceById(R.string.pref_key_email);
+		Preference phone = findPreferenceById(R.string.pref_key_phone);
+		Preference login = findPreferenceById(R.string.pref_key_login);
+
+		// First enable/disable form
+		displayName.setEnabled(loggedIn);
+		email.setEnabled(loggedIn);
+		phone.setEnabled(loggedIn);
+
+		if (loggedIn) {
+			//Update the GUI.
+			displayName.setSummary(user.getString(ParseContract.User.NAME));
+			email.setSummary(user.getEmail());
+			phone.setSummary(user.getString(ParseContract.User.PHONE));
+			//Save the values to SharedPreference
+			Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+			editor.putString(displayName.getKey(), user.getString(ParseContract.User.NAME));
+			editor.putString(email.getKey(), user.getEmail());
+			editor.putString(phone.getKey(), user.getString(ParseContract.User.PHONE));
+			editor.commit();
+			
+			login.setTitle(getString(R.string.logout));
+		} else {
+			login.setTitle(getString(R.string.login));
+		}
+	}
+
+	/**
+	 * Convenience method for finding a preference by the string id of its key.
+	 * 
+	 * @param keyStringId
+	 *            the id of the string which is used as the key of the
+	 *            preference
+	 * @return the preference
+	 */
+	@SuppressWarnings("deprecation")
+	private Preference findPreferenceById(int keyStringId) {
+		return findPreference(getString(keyStringId));
 	}
 	
+
 	/**
-	 * A preference value change listener that updates the preference's summary
-	 * to reflect its new value.
+	 * An OnPreferenceChangeListener which has the mechanism of saving the
+	 * changed information to Parse.com.
+	 * 
+	 * @author Tao Qian(taoqian_2015@depauw.edu)
+	 * 
 	 */
-	private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
+	public static abstract class OnParseStringPreferenceChangeListener
+			implements Preference.OnPreferenceChangeListener {
+		
 		@Override
-		public boolean onPreferenceChange(Preference preference, Object value) {
-			String stringValue = value.toString();
-
-			if (preference instanceof ListPreference) {
-				// For list preferences, look up the correct display value in
-				// the preference's 'entries' list.
-				ListPreference listPreference = (ListPreference) preference;
-				int index = listPreference.findIndexOfValue(stringValue);
-
-				// Set the summary to reflect the new value.
-				preference
-						.setSummary(index >= 0 ? listPreference.getEntries()[index]
-								: null);
-
-			} else {
-				// For all other preferences, set the summary to the value's
-				// simple string representation.
-				preference.setSummary(stringValue);
-			}
+		public boolean onPreferenceChange(Preference preference, Object newValue) {
+			String stringValue = newValue.toString();
+			preference.setSummary(stringValue);
+			updateParseUser(stringValue);
+			ParseUser.getCurrentUser().saveEventually();
 			return true;
 		}
-	};
 
-	/**
-	 * Binds a preference's summary to its value. More specifically, when the
-	 * preference's value is changed, its summary (line of text below the
-	 * preference title) is updated to reflect the value. The summary is also
-	 * immediately updated upon calling this method. The exact display format is
-	 * dependent on the type of preference.
-	 * 
-	 * @see #sBindPreferenceSummaryToValueListener
-	 */
-	private static void bindPreferenceSummaryToValue(Preference preference) {
-		// Set the listener to watch for value changes.
-		preference
-				.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-
-		// Trigger the listener immediately with the preference's
-		// current value.
-		sBindPreferenceSummaryToValueListener.onPreferenceChange(
-				preference,
-				PreferenceManager.getDefaultSharedPreferences(
-						preference.getContext()).getString(preference.getKey(),
-						""));
+		/**
+		 * Update a specific key-value pair in the current Parse user. Do not
+		 * perform save operation in this method.
+		 * 
+		 * @param newValue
+		 *            the new value to be saved.
+		 */
+		public abstract void updateParseUser(String newValue);
 	}
+	
 }

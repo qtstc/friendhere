@@ -448,5 +448,4 @@ int styleable com_facebook_profile_picture_view_preset_size 0
 int xml event_searchable 0x7f050000
 int xml person_searchable 0x7f050001
 int xml pref_account 0x7f050002
-int xml pref_headers 0x7f050003
-int xml pref_profile 0x7f050004
+int xml pref_profile 0x7f050003

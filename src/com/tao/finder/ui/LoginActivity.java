@@ -106,9 +106,5 @@ public class LoginActivity extends Activity {
 		return true;
 	}
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		ParseFacebookUtils.finishAuthentication(requestCode, resultCode, data);
-	}
+
 }

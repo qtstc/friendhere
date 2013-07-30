@@ -30,8 +30,6 @@
     <string name = "debug_api_key">AIzaSyCa2N7Mc54UXqrmxrErZpN5gBtJdTMqS30</string>
     
     <string name="title_activity_login">Login</string>
-    <string name="login">log in</string>
-    <string name="logout">log out</string>
     <string name="action_create_event">Create event</string>
     <string name="action_check_in">check in</string>
     <string name="action_check_out">check out</string>

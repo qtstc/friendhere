@@ -120,7 +120,7 @@ public class EventListActivity extends FragmentActivity implements
 			startActivity(new Intent(this, NewEventActivity.class));
 			break;
 		case R.id.action_settings:// Start LoginAcvity.
-			startActivity(new Intent(this, LoginActivity.class));
+			startActivity(new Intent(this, SettingsActivity.class));
 			break;
 		default:
 		}

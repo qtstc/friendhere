@@ -3,13 +3,10 @@
     <!-- These settings headers are only used on tablets. -->
 
     <header
-        android:fragment="com.tao.finder.SettingsActivity$GeneralPreferenceFragment"
-        android:title="@string/pref_header_general" />
+        android:fragment="com.tao.finder.SettingsActivity$AccountPreferenceFragment"
+        android:title="@string/pref_header_account" />
     <header
-        android:fragment="com.tao.finder.SettingsActivity$NotificationPreferenceFragment"
-        android:title="@string/pref_header_notifications" />
-    <header
-        android:fragment="com.tao.finder.SettingsActivity$DataSyncPreferenceFragment"
-        android:title="@string/pref_header_data_sync" />
+        android:fragment="com.tao.finder.SettingsActivity$ProfilePreferenceFragment"
+        android:title="@string/pref_header_profile" />
 
 </preference-headers>

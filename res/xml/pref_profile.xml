@@ -1,0 +1,39 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory
+        android:title="@string/pref_header_profile"/>
+    
+    <!-- NOTE: EditTextPreference accepts EditText attributes. -->
+    <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
+    <EditTextPreference
+        android:capitalize="words"
+        android:defaultValue=""
+        android:inputType="textCapWords"
+        android:key="@string/pref_key_display_name"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_display_name" />
+    
+        <EditTextPreference
+        android:capitalize="words"
+        android:defaultValue=""
+        android:inputType="textCapWords"
+        android:key="@string/pref_key_email"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_profile_email" />
+        
+        <EditTextPreference
+        android:capitalize="words"
+        android:defaultValue=""
+        android:inputType="textCapWords"
+        android:key="@string/pref_key_phone"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_profile_phone" />
+
+
+</PreferenceScreen>

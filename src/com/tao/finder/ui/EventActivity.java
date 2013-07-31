@@ -235,7 +235,7 @@ public class EventActivity extends LocationAwareActivity implements
 					mLocationClient.removeLocationUpdates(getPendingIntent());
 					//Also clear the result of search list.
 					PersonSearchFragment frag = (PersonSearchFragment) getSupportFragmentManager()
-							.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 1));
+							.findFragmentByTag(Utility.getFragmentTag(R.id.pager, SectionsPagerAdapter.PERSON_SEARCH_PAGE));
 					frag.clearResults();
 				}
 			});
@@ -269,6 +269,9 @@ public class EventActivity extends LocationAwareActivity implements
 	 */
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
+		public static final int EVENT_INFO_PAGE = 0;
+		public static final int PERSON_SEARCH_PAGE = 1;
+		
 		ParseObject event;
 
 		public SectionsPagerAdapter(FragmentManager fm, ParseObject event) {
@@ -282,11 +285,11 @@ public class EventActivity extends LocationAwareActivity implements
 			Fragment fragment = null;
 			switch (position) {
 			// TODO:Set tab 0 as the EventInfoFragment.
-			case 0:
+			case EVENT_INFO_PAGE:
 				fragment = EventInfoFragment.newInstance(event);
 				break;
 			// Set tab 1 as the PersonSearchFragment.
-			case 1:
+			case PERSON_SEARCH_PAGE:
 				fragment = new PersonSearchFragment();
 				break;
 			default:
@@ -304,9 +307,9 @@ public class EventActivity extends LocationAwareActivity implements
 		public CharSequence getPageTitle(int position) {
 			Locale l = Locale.getDefault();
 			switch (position) {
-			case 0:
+			case EVENT_INFO_PAGE:
 				return getString(R.string.info).toUpperCase(l);
-			case 1:
+			case PERSON_SEARCH_PAGE:
 				return getString(R.string.people).toUpperCase(l);
 			}
 			return null;
@@ -314,7 +317,7 @@ public class EventActivity extends LocationAwareActivity implements
 	}
 
 	public static class EventInfoFragment extends Fragment {
-
+		
 		private static final String STARTING_TIME_KEY = "starting_time_key";
 		private static final String ENDING_TIME_KEY = "ending_time_key";
 		private static final String DESCRIPTION_KEY = "description_key";
@@ -441,13 +444,14 @@ public class EventActivity extends LocationAwareActivity implements
 					.trim();
 			// use the query to search data
 			PersonSearchFragment frag = (PersonSearchFragment) getSupportFragmentManager()
-					.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 1));
+					.findFragmentByTag(Utility.getFragmentTag(R.id.pager, SectionsPagerAdapter.PERSON_SEARCH_PAGE));
 			frag.newSearch(searchString, event.getObjectId());
 			// Adds the current search to the search history.
 			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(
 					this, SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
 			suggestions.saveRecentQuery(searchString, null);
 			
+			//Switch to the search page.
 			mViewPager.setCurrentItem(1);
 		}
 	}

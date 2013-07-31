@@ -143,6 +143,9 @@ public class PersonActivity extends FragmentActivity implements
 
 		ParseUser user;
 
+		public static final int TRACKING_MAP_PAGE = 0;
+		public static final int PERSON_INFO_PAGE = 1;
+		
 		public SectionsPagerAdapter(FragmentManager fm, ParseUser user) {
 			super(fm);
 			this.user = user;
@@ -154,7 +157,7 @@ public class PersonActivity extends FragmentActivity implements
 			Fragment fragment = null;
 
 			switch (position) {
-			case 0:
+			case TRACKING_MAP_PAGE:
 				fragment = TrackingMapFragment.newInstance(user);
 				// if (!(mLocationClient.isConnected() || mLocationClient
 				// .isConnecting()))
@@ -169,7 +172,7 @@ public class PersonActivity extends FragmentActivity implements
 				// else
 				// Log.e("It's null!","what?");
 				break;
-			case 1:
+			case PERSON_INFO_PAGE:
 				fragment = PersonInfoFragment.newInstance(user);
 				break;
 			default:
@@ -188,9 +191,9 @@ public class PersonActivity extends FragmentActivity implements
 		public CharSequence getPageTitle(int position) {
 			Locale l = Locale.getDefault();
 			switch (position) {
-			case 0:
+			case TRACKING_MAP_PAGE:
 				return getString(R.string.location).toUpperCase(l);
-			case 1:
+			case PERSON_INFO_PAGE:
 				return getString(R.string.contact).toUpperCase(l);
 			}
 			return null;

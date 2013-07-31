@@ -131,9 +131,9 @@ public class NewEventActivity extends LocationAwareActivity {
 		switch (item.getItemId()) {
 		case R.id.action_create_event:
 			NewEventMapFragment mapFrag = (NewEventMapFragment) getSupportFragmentManager()
-			.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 0));
+			.findFragmentByTag(Utility.getFragmentTag(R.id.pager, SectionsPagerAdapter.NEW_EVENT_MAP_PAGE));
 			NewEventFormFragment formFrag = (NewEventFormFragment) getSupportFragmentManager()
-					.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 1));
+					.findFragmentByTag(Utility.getFragmentTag(R.id.pager, SectionsPagerAdapter.NEW_EVENT_FORM_PAGE));
 
 			// Validate user input.
 			String errorMessage = "";
@@ -190,6 +190,9 @@ public class NewEventActivity extends LocationAwareActivity {
 	 */
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
+		public static final int NEW_EVENT_MAP_PAGE = 0;
+		public static final int NEW_EVENT_FORM_PAGE = 1;
+		
 		private LatLng userLocation;
 		
 		/**
@@ -208,10 +211,10 @@ public class NewEventActivity extends LocationAwareActivity {
 			Fragment fragment = null;
 
 			switch (position) {
-			case 0:
+			case NEW_EVENT_MAP_PAGE:
 				fragment = NewEventMapFragment.newInstance(userLocation);
 				break;
-			case 1:
+			case NEW_EVENT_FORM_PAGE:
 				fragment = new NewEventFormFragment();
 				break;
 			default:
@@ -227,9 +230,9 @@ public class NewEventActivity extends LocationAwareActivity {
 		@Override
 		public CharSequence getPageTitle(int position) {
 			switch (position) {
-			case 0:
+			case NEW_EVENT_MAP_PAGE:
 				return getText(R.string.location);
-			case 1:
+			case NEW_EVENT_FORM_PAGE:
 				return getText(R.string.detail);
 			default:
 			}

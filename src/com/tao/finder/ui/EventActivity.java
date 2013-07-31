@@ -3,7 +3,6 @@ package com.tao.finder.ui;
 import java.util.List;
 import java.util.Locale;
 
-import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -11,8 +10,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
@@ -22,29 +19,26 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.tao.finder.R;
 import com.tao.finder.logic.BackgroundLocationUpdater;
-import com.tao.finder.logic.LocationUtils;
 import com.tao.finder.logic.ParseContract;
 import com.tao.finder.logic.SuggestionProvider;
 import com.tao.finder.logic.Utility;
-import com.tao.finder.ui.NewEventActivity.NewEventMapFragment;
 import com.tao.finder.ui.SearchListFragment.OnSearchListener;
 
 import android.app.ActionBar;
-import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -53,6 +47,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * This activity allows the user to view details of an event, search users who
@@ -207,7 +202,8 @@ public class EventActivity extends LocationAwareActivity implements
 	public boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_checkin:
-			// TODO:check parseuser
+			if(!isLoggedin())//Return if the user is not logged in.
+				return true;
 			setProgressBarIndeterminateVisibility(true);
 			// If the user is not checked in, check him in and start the
 			// locationUpdater.
@@ -237,6 +233,10 @@ public class EventActivity extends LocationAwareActivity implements
 					setProgressBarIndeterminateVisibility(false);
 					checkin = null;
 					mLocationClient.removeLocationUpdates(getPendingIntent());
+					//Also clear the result of search list.
+					PersonSearchFragment frag = (PersonSearchFragment) getSupportFragmentManager()
+							.findFragmentByTag(Utility.getFragmentTag(R.id.pager, 1));
+					frag.clearResults();
 				}
 			});
 			break;
@@ -429,6 +429,11 @@ public class EventActivity extends LocationAwareActivity implements
 						}
 					});
 		}
+		else if(!isLoggedin())//Return if the user is using search && the user is not logged in.
+			return;
+		else if(!isCheckedIn())//If the user is logged in but did not check in, notify him with a toast
+			return;
+			
 		
 		//TODO:prevent user from sending search request until frag is initialized.
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
@@ -442,9 +447,52 @@ public class EventActivity extends LocationAwareActivity implements
 			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(
 					this, SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
 			suggestions.saveRecentQuery(searchString, null);
+			
+			mViewPager.setCurrentItem(1);
 		}
 	}
 
+	/**
+	 * Check whether the user is logged in.
+	 * If not, a dialog requesting the user to log in will be shown.
+	 * @return true if the user is logged in, false otherwise.
+	 */
+	private boolean isLoggedin()
+	{
+		if(ParseUser.getCurrentUser() != null)
+			return true;
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+		builder.setMessage(R.string.request_login_dialog_message);
+		builder.setNegativeButton(R.string.cancel, null);
+		builder.setPositiveButton(R.string.ok,new OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				Intent i = new Intent(EventActivity.this, SettingsActivity.class);
+				startActivity(i);
+			}
+		});
+		
+		AlertDialog dialog = builder.create();
+		dialog.show();
+		return false;
+	}
+	
+	/**
+	 * Check whether the user is checked in.
+	 * Display a toast message if he is not.
+	 * @return true if the user is checked in.
+	 */
+	private boolean isCheckedIn()
+	{
+		if(checkin != null)
+			return true;
+		Toast.makeText(this, R.string.request_checkin_toast_message, Toast.LENGTH_SHORT).show();
+		return false;
+	}
+	
 	@Override
 	protected void onNewIntent(Intent intent) {
 		handleIntent(intent);

@@ -75,5 +75,4 @@ public class EventSearchFragment extends SearchListFragment {
 					}
 				});
 	}
-
 }

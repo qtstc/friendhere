@@ -38,6 +38,9 @@
     <!-- Latitude, longitude format -->
     <string name="latitude_longitude">%1$.8f, %2$.8f</string>
 
+    <!-- Used in EventActivity -->
+    <string name="request_login_dialog_message">Please log in first before using this feature.</string>
+    <string name="request_checkin_toast_message">Please check in to this event first.</string>
     
     <!-- Google Play service connection Messages -->
     <string name="connected">Client connected</string>

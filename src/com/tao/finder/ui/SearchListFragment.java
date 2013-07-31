@@ -88,6 +88,13 @@ public abstract class SearchListFragment extends Fragment {
 		});
 		return rootView;
 	}
+	
+	public void clearResults()
+	{
+		PullToRefreshListView resultList = ((PullToRefreshListView) getView()
+				.findViewById(R.id.result_list));
+		resultList.setAdapter(null);
+	}
 
 	protected void initializeParameters() {
 		maxResultSize = 1;

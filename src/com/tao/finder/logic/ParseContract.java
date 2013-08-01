@@ -1,6 +1,7 @@
 package com.tao.finder.logic;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -203,7 +204,9 @@ public class ParseContract {
 			// TODO: now the search is case sensitive, change it.
 			query.setLimit(resultNumber);
 			query.setSkip(skip);
-			query.whereContains(NAME, searchString).findInBackground(callback);
+			query.whereContains(NAME, searchString)
+			.whereGreaterThan(ENDING_TIME, Calendar.getInstance().getTime())
+			.findInBackground(callback);
 		}
 
 		/**

@@ -9,27 +9,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".NewEventActivity$NewEventFormFragment" >
 
-    <EditText
-        android:id="@+id/eventNameEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="@string/event_name"
-        android:maxLength="50" />
-
-    <EditText
-        android:id="@+id/eventDescriptionEditText"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:gravity="top"
-        android:layout_marginTop="30dp"
-        android:ems="10"
-        android:layout_weight="1"
-        android:hint="@string/event_description"
-        android:inputType="textMultiLine"
-        android:maxLength="500" />
-
-    <LinearLayout
+     <LinearLayout
         android:id="@+id/startingTimeLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -64,5 +44,24 @@
          android:layout_weight="0.8"
          style="?android:attr/spinnerStyle"/>
     </LinearLayout>
+    
+    <EditText
+        android:id="@+id/eventNameEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="@string/event_name"
+        android:maxLength="50" />
 
+    <EditText
+        android:id="@+id/eventDescriptionEditText"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:gravity="top"
+        android:layout_marginTop="30dp"
+        android:ems="10"
+        android:layout_weight="1"
+        android:hint="@string/event_description"
+        android:inputType="textMultiLine"
+        android:maxLength="500" />
 </LinearLayout>

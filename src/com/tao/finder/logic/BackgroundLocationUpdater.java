@@ -23,7 +23,6 @@ public class BackgroundLocationUpdater extends IntentService {
 
 	public BackgroundLocationUpdater(String name) {
 		super(name);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

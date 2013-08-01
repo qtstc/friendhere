@@ -89,6 +89,9 @@ public abstract class SearchListFragment extends Fragment {
 		return rootView;
 	}
 	
+	/**
+	 * Clear the results in the search list.
+	 */
 	public void clearResults()
 	{
 		PullToRefreshListView resultList = ((PullToRefreshListView) getView()
@@ -97,7 +100,7 @@ public abstract class SearchListFragment extends Fragment {
 	}
 
 	protected void initializeParameters() {
-		maxResultSize = 1;
+		maxResultSize = 10;
 		resultSkip = 0;
 		lastResultSize = Integer.MAX_VALUE;
 		searchString = NO_SEARCH;

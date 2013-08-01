@@ -64,6 +64,8 @@ public class EventActivity extends LocationAwareActivity implements
 	// A request to connect to Location Services
 	private LocationRequest mLocationRequest;
 
+	private boolean fragmentLoaded;
+	
 	ParseObject event;
 	ParseObject checkin;
 
@@ -84,10 +86,12 @@ public class EventActivity extends LocationAwareActivity implements
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		fragmentLoaded = false;
 		super.onCreate(savedInstanceState);
-		initializeLocationRequest();
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_event);
+		setProgressBarIndeterminateVisibility(true);
+		initializeLocationRequest();
 		handleIntent(getIntent());
 	}
 
@@ -114,8 +118,10 @@ public class EventActivity extends LocationAwareActivity implements
 		super.onConnected(arg0);
 		setTitle(event.getString(ParseContract.Event.NAME));
 		initializeTabs();
-		//TODO: this is where all the initialization work finishes,
-		//enable the UI which is disabled during initialization.
+		
+		fragmentLoaded = true;
+		invalidateOptionsMenu();
+		setProgressBarIndeterminateVisibility(false);
 	}
 
 	@Override
@@ -179,15 +185,20 @@ public class EventActivity extends LocationAwareActivity implements
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		if(!fragmentLoaded)
+			return true;
+		
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.event, menu);
-
+		
 		// Change the text displayed depending on the settings
-		MenuItem item = menu.findItem(R.id.action_checkin);
+		MenuItem checkinItem = menu.findItem(R.id.action_checkin);
+		MenuItem searchItem = menu.findItem(R.id.action_person_search);
+		
 		if (checkin == null)
-			item.setTitle(getString(R.string.action_check_in));
+			checkinItem.setTitle(getString(R.string.action_check_in));
 		else
-			item.setTitle(getString(R.string.action_check_out));
+			checkinItem.setTitle(getString(R.string.action_check_out));
 
 		// Associate searchable configuration with the SearchView
 		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
@@ -205,6 +216,7 @@ public class EventActivity extends LocationAwareActivity implements
 			if(!isLoggedin())//Return if the user is not logged in.
 				return true;
 			setProgressBarIndeterminateVisibility(true);
+			item.setEnabled(false);
 			// If the user is not checked in, check him in and start the
 			// locationUpdater.
 			if (checkin == null) {
@@ -216,6 +228,7 @@ public class EventActivity extends LocationAwareActivity implements
 								// TODO if exception caught, make checkin null.
 								item.setTitle(getString(R.string.action_check_out));
 								setProgressBarIndeterminateVisibility(false);
+								item.setEnabled(true);
 								mLocationClient.requestLocationUpdates(
 										mLocationRequest, getPendingIntent());
 							}
@@ -231,6 +244,7 @@ public class EventActivity extends LocationAwareActivity implements
 					// TODO change the title back otherwise.
 					item.setTitle(getString(R.string.action_check_in));
 					setProgressBarIndeterminateVisibility(false);
+					item.setEnabled(true);
 					checkin = null;
 					mLocationClient.removeLocationUpdates(getPendingIntent());
 					//Also clear the result of search list.
@@ -422,7 +436,6 @@ public class EventActivity extends LocationAwareActivity implements
 											if (objects.size() == 0)
 												checkin = null;
 											else {
-												invalidateOptionsMenu();
 												checkin = objects.get(0);
 											}
 											mLocationClient.connect();
@@ -436,9 +449,7 @@ public class EventActivity extends LocationAwareActivity implements
 			return;
 		else if(!isCheckedIn())//If the user is logged in but did not check in, notify him with a toast
 			return;
-			
-		
-		//TODO:prevent user from sending search request until frag is initialized.
+
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
 			String searchString = intent.getStringExtra(SearchManager.QUERY)
 					.trim();

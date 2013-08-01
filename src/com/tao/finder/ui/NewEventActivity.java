@@ -23,16 +23,13 @@ import com.parse.SaveCallback;
 import com.tao.finder.R;
 import com.tao.finder.logic.ParseContract;
 import com.tao.finder.logic.Utility;
-import com.tao.finder.ui.PersonActivity.SectionsPagerAdapter;
 
 import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.app.AlertDialog.Builder;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
@@ -40,24 +37,26 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+/**
+ * Activity which allows the user to create a new event.
+ * 
+ * @author Tao Qian(taoqian_2015@depauw.edu)
+ *
+ */
 public class NewEventActivity extends LocationAwareActivity implements
 ActionBar.TabListener{
 
@@ -70,6 +69,8 @@ ActionBar.TabListener{
 	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
 	 */
 	SectionsPagerAdapter mSectionsPagerAdapter;
+	
+	public static final String TAG = "NewEventActivity";
 
 	public static final double DEFAULT_EVENT_RADIUS = 0.001;// The default
 															// radius of the
@@ -158,24 +159,24 @@ ActionBar.TabListener{
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_create_event:
-			NewEventMapFragment mapFrag = (NewEventMapFragment) getSupportFragmentManager()
+			final NewEventMapFragment mapFrag = (NewEventMapFragment) getSupportFragmentManager()
 			.findFragmentByTag(Utility.getFragmentTag(R.id.pager, SectionsPagerAdapter.NEW_EVENT_MAP_PAGE));
 			NewEventFormFragment formFrag = (NewEventFormFragment) getSupportFragmentManager()
 					.findFragmentByTag(Utility.getFragmentTag(R.id.pager, SectionsPagerAdapter.NEW_EVENT_FORM_PAGE));
 
 			// Validate user input.
 			String errorMessage = "";
-			Date start = formFrag.getStartingTime();
-			Date end = formFrag.getEndingTime();
+			final Date start = formFrag.getStartingTime();
+			final Date end = formFrag.getEndingTime();
 			if (start.after(end))
 				errorMessage += "\n" + getText(R.string.starting_time_too_late);
 			if (end.before(Calendar.getInstance().getTime()))
 				errorMessage += "\n" + getText(R.string.ending_time_too_early);
 
-			String name = formFrag.getName().trim();
+			final String name = formFrag.getName().trim();
 			if (name.equals(""))
 				errorMessage += "\n" + getText(R.string.empty_name);
-			String description = formFrag.getDescription().trim();
+			final String description = formFrag.getDescription().trim();
 
 			errorMessage = errorMessage.trim();
 			if (!errorMessage.isEmpty()) {
@@ -183,18 +184,21 @@ ActionBar.TabListener{
 				return true;
 			}
 			setProgressBarIndeterminateVisibility(true);
-			LatLng centerPosition = mapFrag.getCenterPosition();
+			final LatLng centerPosition = mapFrag.getCenterPosition();
 			ParseContract.Event.createEvent(ParseUser.getCurrentUser(), name,
 					start, end, centerPosition.longitude,
 					centerPosition.latitude, mapFrag.getRadius(), description,
 					new SaveCallback() {
 						@Override
 						public void done(ParseException e) {
-							// TODO Auto-generated method stub
 							if (e != null)
-								e.printStackTrace();
+							{
+								Log.d(TAG,"Error in creating event:"+e.toString());
+								Toast.makeText(NewEventActivity.this, R.string.connection_error_toast_message, Toast.LENGTH_SHORT).show();
+							}
+							else
+								finish();
 							setProgressBarIndeterminateVisibility(false);
-							finish();
 						}
 					});
 			break;

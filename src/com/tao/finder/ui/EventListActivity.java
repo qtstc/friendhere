@@ -41,7 +41,6 @@ public class EventListActivity extends FragmentActivity implements
 		OnSearchListener {
 
 	public final static String TAG = "EventListActivity";
-	private final static String EVENT_SEARCH_FRAGMENT_TAG = "event_search_fragment_tag";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,25 +52,11 @@ public class EventListActivity extends FragmentActivity implements
 
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_event_list);
-		setProgressBarIndeterminate(true);
 
-		initializeList();
 		handleIntent(getIntent());
 		getKeyHash();
 	}
 
-	/**
-	 * This method adds the EventSearchFragment to the activity.
-	 */
-	public void initializeList() {
-		FragmentManager fragmentManager = getSupportFragmentManager();
-		FragmentTransaction fragmentTransaction = fragmentManager
-				.beginTransaction();
-		EventSearchFragment fragment = new EventSearchFragment();
-		fragmentTransaction.add(R.id.event_list_layout, fragment,
-				EVENT_SEARCH_FRAGMENT_TAG);
-		fragmentTransaction.commit();
-	}
 
 	/**
 	 * Method to be used to get the keyhash used by Facebook. It needs to be put
@@ -144,8 +129,7 @@ public class EventListActivity extends FragmentActivity implements
 			String searchString = intent.getStringExtra(SearchManager.QUERY)
 					.trim();
 			// use the query to search data
-			EventSearchFragment frag = (EventSearchFragment) getSupportFragmentManager()
-					.findFragmentByTag(EVENT_SEARCH_FRAGMENT_TAG);
+			EventSearchFragment frag = (EventSearchFragment) getSupportFragmentManager().findFragmentById(R.id.event_search_fragment);
 			frag.newSearch(searchString);
 			// Adds the current search to the search history.
 			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(

@@ -54,7 +54,7 @@ public class EventListActivity extends FragmentActivity implements
 		setContentView(R.layout.activity_event_list);
 
 		handleIntent(getIntent());
-		getKeyHash();
+		//getKeyHash();
 	}
 
 

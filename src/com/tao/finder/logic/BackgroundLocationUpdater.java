@@ -2,6 +2,7 @@ package com.tao.finder.logic;
 
 import com.google.android.gms.location.LocationClient;
 import com.parse.Parse;
+import com.parse.ParseException;
 import com.parse.ParseUser;
 
 import android.app.IntentService;
@@ -35,7 +36,16 @@ public class BackgroundLocationUpdater extends IntentService {
 					ParseContract.CLIENT_KEY);
 			ParseUser user = ParseUser.getCurrentUser();
 			if (user != null) {
-				ParseContract.User.updateLocation(user, location);
+				location.setLatitude(1);
+				location.setLongitude(2);
+				try
+				{
+					ParseContract.User.updateLocation(user, location);
+				}
+				catch(ParseException e)
+				{
+					Log.d("Failed","Update failed");
+				}
 			}
 			Log.d("Background Receiver",
 					"onHandleIntent " + location.getLatitude() + ","

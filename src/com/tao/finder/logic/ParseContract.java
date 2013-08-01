@@ -57,10 +57,11 @@ public class ParseContract {
 		 *            the user.
 		 * @param l
 		 *            the location
+		 * @throws ParseException 
 		 */
-		public static void updateLocation(ParseUser user, Location l) {
+		public static void updateLocation(ParseUser user, Location l) throws ParseException {
 			user.put(LOCATION, toGeoPoint(l));
-			user.saveEventually();
+			user.save();
 		}
 
 		/**

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.widget.HeaderViewListAdapter;
+import android.widget.Toast;
 
 import com.handmark.pulltorefresh.library.PullToRefreshListView;
 import com.parse.FindCallback;
@@ -59,8 +60,11 @@ public class PersonSearchFragment extends SearchListFragment {
 				resultSkip, new FindCallback<ParseUser>() {
 					@Override
 					public void done(List<ParseUser> objects, ParseException e) {
-						addSearchResult(adapter, objects);
 						onSearchListener.onSearchEnded();
+						if(e == null)
+							addSearchResult(adapter, objects);
+						else
+							Toast.makeText(getActivity(), R.string.connection_error_toast_message, Toast.LENGTH_SHORT).show();
 					}
 				});
 	}
@@ -75,8 +79,11 @@ public class PersonSearchFragment extends SearchListFragment {
 				resultSkip, new FindCallback<ParseUser>() {
 					@Override
 					public void done(List<ParseUser> objects, ParseException e) {
-						addSearchResult(adapter, objects);
 						resultList.onRefreshComplete();
+						if(e == null)
+							addSearchResult(adapter, objects);
+						else
+							Toast.makeText(getActivity(), R.string.connection_error_toast_message, Toast.LENGTH_SHORT).show();
 					}
 				});
 	}

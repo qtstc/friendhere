@@ -5,15 +5,22 @@ import java.security.NoSuchAlgorithmException;
 import com.parse.Parse;
 import com.parse.ParseFacebookUtils;
 import com.tao.finder.R;
+import com.tao.finder.logic.LocationUpdateScheduler;
 import com.tao.finder.logic.ParseContract;
 import com.tao.finder.logic.SuggestionProvider;
 import com.tao.finder.ui.SearchListFragment.OnSearchListener;
 
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.provider.SearchRecentSuggestions;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -41,7 +48,11 @@ public class EventListActivity extends FragmentActivity implements
 		OnSearchListener {
 
 	public final static String TAG = "EventListActivity";
-
+	
+	private LocationUpdateScheduler scheduler;
+	private PendingIntent pi;
+	private AlarmManager am;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -55,8 +66,11 @@ public class EventListActivity extends FragmentActivity implements
 
 		handleIntent(getIntent());
 		//getKeyHash();
+		
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+		sp.edit().putString("ss", "hahaasfaf").commit();
+		
 	}
-
 
 	/**
 	 * Method to be used to get the keyhash used by Facebook. It needs to be put

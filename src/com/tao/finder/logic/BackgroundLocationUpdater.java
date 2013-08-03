@@ -36,8 +36,6 @@ public class BackgroundLocationUpdater extends IntentService {
 					ParseContract.CLIENT_KEY);
 			ParseUser user = ParseUser.getCurrentUser();
 			if (user != null) {
-				location.setLatitude(1);
-				location.setLongitude(2);
 				try
 				{
 					ParseContract.User.updateLocation(user, location);

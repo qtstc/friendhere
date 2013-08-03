@@ -3,7 +3,6 @@ package com.tao.finder.ui;
 import java.util.List;
 import java.util.Locale;
 
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;

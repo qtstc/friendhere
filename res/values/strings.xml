@@ -35,6 +35,8 @@
     <string name="action_check_out">check out</string>
     <string name="title_activity_person">Person</string>
     
+    <string name="last_updated_info_window">Last updated:</string>
+    
     <!-- Latitude, longitude format -->
     <string name="latitude_longitude">%1$.8f, %2$.8f</string>
 

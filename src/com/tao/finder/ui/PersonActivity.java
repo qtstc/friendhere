@@ -7,7 +7,6 @@ import java.util.TimerTask;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -18,7 +17,6 @@ import com.parse.ParseUser;
 import com.tao.finder.R;
 import com.tao.finder.logic.ParseContract;
 import com.tao.finder.logic.Utility;
-import com.tao.finder.ui.NewEventActivity.NewEventFormFragment;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
@@ -34,6 +32,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.TextView;
 
 public class PersonActivity extends FragmentActivity implements
@@ -59,8 +58,10 @@ public class PersonActivity extends FragmentActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_person);
-
+		
+		setProgressBarIndeterminateVisibility(true);
 		ParseContract.User.getPersonById(
 				getIntent().getStringExtra(SearchListFragment.OBJECT_ID),
 				new GetCallback<ParseUser>() {
@@ -69,6 +70,7 @@ public class PersonActivity extends FragmentActivity implements
 					public void done(ParseUser object, ParseException e) {
 						user = object;
 						initializeTabs(user);
+						setProgressBarIndeterminateVisibility(false);
 					}
 				});
 	}
@@ -297,8 +299,11 @@ public class PersonActivity extends FragmentActivity implements
 				final Marker m = mMap
 						.addMarker(new MarkerOptions()
 								.position(position)
+								.title(getString(R.string.last_updated_info_window))
+								.snippet(Utility.dateToString(user.getUpdatedAt()))
 								.icon(BitmapDescriptorFactory
 										.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+				m.showInfoWindow();
 				mMap.animateCamera(CameraUpdateFactory.newLatLng(position));
 
 				final Handler handler = new Handler();//Used a handler because update to UI can only be done in UI thread
@@ -316,6 +321,8 @@ public class PersonActivity extends FragmentActivity implements
 								@Override
 								public void run() {
 										m.setPosition(position);
+										m.setSnippet(Utility.dateToString(user.getUpdatedAt()));
+										m.showInfoWindow();
 										mMap.animateCamera(CameraUpdateFactory
 												.newLatLng(position));
 								}

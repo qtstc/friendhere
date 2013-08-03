@@ -2,12 +2,12 @@ package com.tao.finder.logic;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import android.location.Location;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.parse.ParseGeoPoint;
-import com.tao.finder.R;
 
 /**
  * Common methods.
@@ -17,7 +17,7 @@ import com.tao.finder.R;
  */
 public class Utility {
 	
-	public final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM-dd-yyyy HH:mm");	
+	public final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM-dd-yyyy HH:mm",Locale.getDefault());	
 	public static String truncString(String s, int length) {
 		if (s.length() < length)
 			return s;

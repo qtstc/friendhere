@@ -61,10 +61,12 @@ public class PersonSearchFragment extends SearchListFragment {
 					@Override
 					public void done(List<ParseUser> objects, ParseException e) {
 						onSearchListener.onSearchEnded();
-						if(e == null)
+						if (e == null)
 							addSearchResult(adapter, objects);
 						else
-							Toast.makeText(getActivity(), R.string.connection_error_toast_message, Toast.LENGTH_SHORT).show();
+							Toast.makeText(getActivity(),
+									R.string.connection_error_toast_message,
+									Toast.LENGTH_SHORT).show();
 					}
 				});
 	}
@@ -80,10 +82,12 @@ public class PersonSearchFragment extends SearchListFragment {
 					@Override
 					public void done(List<ParseUser> objects, ParseException e) {
 						resultList.onRefreshComplete();
-						if(e == null)
+						if (e == null)
 							addSearchResult(adapter, objects);
 						else
-							Toast.makeText(getActivity(), R.string.connection_error_toast_message, Toast.LENGTH_SHORT).show();
+							Toast.makeText(getActivity(),
+									R.string.connection_error_toast_message,
+									Toast.LENGTH_SHORT).show();
 					}
 				});
 	}

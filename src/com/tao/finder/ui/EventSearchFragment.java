@@ -56,8 +56,10 @@ public class EventSearchFragment extends SearchListFragment {
 					@Override
 					public void done(List<ParseObject> objects, ParseException e) {
 						onSearchListener.onSearchEnded();
-						if(e != null)
-							Toast.makeText(getActivity(), R.string.connection_error_toast_message, Toast.LENGTH_SHORT).show();
+						if (e != null)
+							Toast.makeText(getActivity(),
+									R.string.connection_error_toast_message,
+									Toast.LENGTH_SHORT).show();
 						else
 							addSearchResult(adapter, objects);
 					}
@@ -76,10 +78,12 @@ public class EventSearchFragment extends SearchListFragment {
 					@Override
 					public void done(List<ParseObject> objects, ParseException e) {
 						resultList.onRefreshComplete();
-						if(e == null)
+						if (e == null)
 							addSearchResult(adapter, objects);
 						else
-							Toast.makeText(getActivity(), R.string.connection_error_toast_message, Toast.LENGTH_SHORT).show();
+							Toast.makeText(getActivity(),
+									R.string.connection_error_toast_message,
+									Toast.LENGTH_SHORT).show();
 					}
 				});
 	}

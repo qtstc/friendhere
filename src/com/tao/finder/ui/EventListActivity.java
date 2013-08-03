@@ -41,7 +41,7 @@ public class EventListActivity extends FragmentActivity implements
 		OnSearchListener {
 
 	public final static String TAG = "EventListActivity";
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -54,11 +54,12 @@ public class EventListActivity extends FragmentActivity implements
 		setContentView(R.layout.activity_event_list);
 
 		handleIntent(getIntent());
-		//getKeyHash();
-		
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+		// getKeyHash();
+
+		SharedPreferences sp = PreferenceManager
+				.getDefaultSharedPreferences(this);
 		sp.edit().putString("ss", "hahaasfaf").commit();
-		
+
 	}
 
 	/**
@@ -132,7 +133,8 @@ public class EventListActivity extends FragmentActivity implements
 			String searchString = intent.getStringExtra(SearchManager.QUERY)
 					.trim();
 			// use the query to search data
-			EventSearchFragment frag = (EventSearchFragment) getSupportFragmentManager().findFragmentById(R.id.event_search_fragment);
+			EventSearchFragment frag = (EventSearchFragment) getSupportFragmentManager()
+					.findFragmentById(R.id.event_search_fragment);
 			frag.newSearch(searchString);
 			// Adds the current search to the search history.
 			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(

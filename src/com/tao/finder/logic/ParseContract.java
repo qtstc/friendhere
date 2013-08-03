@@ -57,9 +57,10 @@ public class ParseContract {
 		 *            the user.
 		 * @param l
 		 *            the location
-		 * @throws ParseException 
+		 * @throws ParseException
 		 */
-		public static void updateLocation(ParseUser user, Location l) throws ParseException {
+		public static void updateLocation(ParseUser user, Location l)
+				throws ParseException {
 			user.put(LOCATION, toGeoPoint(l));
 			user.save();
 		}
@@ -74,14 +75,17 @@ public class ParseContract {
 		public static ParseGeoPoint toGeoPoint(Location l) {
 			return new ParseGeoPoint(l.getLatitude(), l.getLongitude());
 		}
-		
+
 		/**
 		 * Get a ParseUser instance from the server based on its object id
-		 * @param objectId the object id of the ParseUser instance.
-		 * @param callback the callback to be executed afterwards.
+		 * 
+		 * @param objectId
+		 *            the object id of the ParseUser instance.
+		 * @param callback
+		 *            the callback to be executed afterwards.
 		 */
-		public static void getPersonById(String objectId,GetCallback<ParseUser> callback)
-		{
+		public static void getPersonById(String objectId,
+				GetCallback<ParseUser> callback) {
 			ParseUser.getQuery().getInBackground(objectId, callback);
 		}
 
@@ -206,8 +210,9 @@ public class ParseContract {
 			query.setLimit(resultNumber);
 			query.setSkip(skip);
 			query.whereContains(NAME, searchString)
-			.whereGreaterThan(ENDING_TIME, Calendar.getInstance().getTime())
-			.findInBackground(callback);
+					.whereGreaterThan(ENDING_TIME,
+							Calendar.getInstance().getTime())
+					.findInBackground(callback);
 		}
 
 		/**

@@ -60,7 +60,7 @@ public class PersonActivity extends FragmentActivity implements
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_person);
-		
+
 		setProgressBarIndeterminateVisibility(true);
 		ParseContract.User.getPersonById(
 				getIntent().getStringExtra(SearchListFragment.OBJECT_ID),
@@ -147,7 +147,7 @@ public class PersonActivity extends FragmentActivity implements
 
 		public static final int TRACKING_MAP_PAGE = 0;
 		public static final int PERSON_INFO_PAGE = 1;
-		
+
 		public SectionsPagerAdapter(FragmentManager fm, ParseUser user) {
 			super(fm);
 			this.user = user;
@@ -243,19 +243,19 @@ public class PersonActivity extends FragmentActivity implements
 	 * A fragment which contains the map for tracking another user.
 	 * 
 	 * @author Tao Qian(taoqian_2015@depauw.edu)
-	 *
+	 * 
 	 */
 	public static class TrackingMapFragment extends SupportMapFragment {
 
 		private static final String USER_OBJECT_ID_KEY = "user_object_id_key";
-		private Timer t;//Timer used to schedule periodical location update.
-		private static final int UPDATE_INTERVAL = 10000;//Update interval in millisecond
+		private Timer t;// Timer used to schedule periodical location update.
+		private static final int UPDATE_INTERVAL = 10000;// Update interval in
+															// millisecond
 
-		public TrackingMapFragment()
-		{
-			t = null;//initialize timer to null
+		public TrackingMapFragment() {
+			t = null;// initialize timer to null
 		}
-		
+
 		public static TrackingMapFragment newInstance(ParseUser user) {
 			TrackingMapFragment frag = new TrackingMapFragment();
 			Bundle args = new Bundle();
@@ -270,43 +270,48 @@ public class PersonActivity extends FragmentActivity implements
 			View v = super
 					.onCreateView(inflater, container, savedInstanceState);
 
-			//Initialize map.
+			// Initialize map.
 			GoogleMap mMap = getMap();
 			mMap.setMyLocationEnabled(true);
 			mMap.animateCamera(CameraUpdateFactory
 					.zoomTo(LocationAwareActivity.DEFAULT_ZOOM_LEVEL));
 			startUpdate(mMap);
-			
+
 			return v;
 		}
-		
+
 		/**
-		 * If location update is not yet started,
-		 * start the update.
+		 * If location update is not yet started, start the update.
 		 * 
-		 * @param mMap the map on which the updates are drawn
+		 * @param mMap
+		 *            the map on which the updates are drawn
 		 */
-		private void startUpdate(final GoogleMap mMap)
-		{
-			if(t != null)//If the periodical update is already started.
+		private void startUpdate(final GoogleMap mMap) {
+			if (t != null)// If the periodical update is already started.
 				return;
 			try {
-				//First get initialize the ParseUser instance.
-				final ParseUser user = ParseUser.getQuery().get(getArguments().getString(USER_OBJECT_ID_KEY));
-				//Get the first location, draw a marker and move the map to focus on that location.
+				// First get initialize the ParseUser instance.
+				final ParseUser user = ParseUser.getQuery().get(
+						getArguments().getString(USER_OBJECT_ID_KEY));
+				// Get the first location, draw a marker and move the map to
+				// focus on that location.
 				LatLng position = Utility.toLatLng(user
 						.getParseGeoPoint(ParseContract.User.LOCATION));
 				final Marker m = mMap
 						.addMarker(new MarkerOptions()
 								.position(position)
 								.title(getString(R.string.last_updated_info_window))
-								.snippet(Utility.dateToString(user.getUpdatedAt()))
+								.snippet(
+										Utility.dateToString(user
+												.getUpdatedAt()))
 								.icon(BitmapDescriptorFactory
 										.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
 				m.showInfoWindow();
 				mMap.animateCamera(CameraUpdateFactory.newLatLng(position));
 
-				final Handler handler = new Handler();//Used a handler because update to UI can only be done in UI thread
+				final Handler handler = new Handler();// Used a handler because
+														// update to UI can only
+														// be done in UI thread
 
 				t = new Timer();
 				TimerTask tk = new TimerTask() {
@@ -315,16 +320,18 @@ public class PersonActivity extends FragmentActivity implements
 					public void run() {
 						try {
 							user.refresh();
-							final LatLng position = Utility.toLatLng(user
-									.getParseGeoPoint(ParseContract.User.LOCATION));
+							final LatLng position = Utility
+									.toLatLng(user
+											.getParseGeoPoint(ParseContract.User.LOCATION));
 							handler.post(new Runnable() {
 								@Override
 								public void run() {
-										m.setPosition(position);
-										m.setSnippet(Utility.dateToString(user.getUpdatedAt()));
-										m.showInfoWindow();
-										mMap.animateCamera(CameraUpdateFactory
-												.newLatLng(position));
+									m.setPosition(position);
+									m.setSnippet(Utility.dateToString(user
+											.getUpdatedAt()));
+									m.showInfoWindow();
+									mMap.animateCamera(CameraUpdateFactory
+											.newLatLng(position));
 								}
 							});
 						} catch (ParseException e1) {
@@ -338,8 +345,7 @@ public class PersonActivity extends FragmentActivity implements
 				e1.printStackTrace();
 			} catch (Exception e) {
 				Log.e("Error", e.toString());
-				if (t != null)
-				{
+				if (t != null) {
 					t.cancel();
 					t = null;
 				}
@@ -348,16 +354,15 @@ public class PersonActivity extends FragmentActivity implements
 
 		@Override
 		public void onResume() {
-			Log.e("TrackingMapFragment","onResume");
+			Log.e("TrackingMapFragment", "onResume");
 			super.onResume();
 			startUpdate(getMap());
 		}
-		
+
 		@Override
 		public void onPause() {
-			Log.e("TrackingMapFragment","onPause");
-			if (t != null)
-			{
+			Log.e("TrackingMapFragment", "onPause");
+			if (t != null) {
 				t.cancel();
 				t = null;
 			}

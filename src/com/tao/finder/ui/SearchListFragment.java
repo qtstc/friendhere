@@ -30,8 +30,9 @@ public abstract class SearchListFragment extends Fragment {
 
 	// public static final String ARG_SEARCH_STRING = "search_string";
 	private static final String NO_SEARCH = "user_did_not_search_yet";
-	
-	//Name of the string extra sent to the new activity when a result is selected.
+
+	// Name of the string extra sent to the new activity when a result is
+	// selected.
 	public static final String OBJECT_ID = "object_id";
 
 	protected String searchString;
@@ -88,12 +89,11 @@ public abstract class SearchListFragment extends Fragment {
 		});
 		return rootView;
 	}
-	
+
 	/**
 	 * Clear the results in the search list.
 	 */
-	public void clearResults()
-	{
+	public void clearResults() {
 		PullToRefreshListView resultList = ((PullToRefreshListView) getView()
 				.findViewById(R.id.result_list));
 		resultList.setAdapter(null);

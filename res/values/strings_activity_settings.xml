@@ -6,7 +6,7 @@
     <!-- Profile settings -->
     <string name="pref_header_account">Account</string>
     <string name="pref_key_login">pref_key_login</string>
-    <string name="login">log in</string>
+    <string name="login">log in with Facebook</string>
     <string name="logout">log out</string>
     
     <!-- Profile settings -->

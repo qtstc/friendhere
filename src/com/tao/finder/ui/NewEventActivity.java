@@ -55,10 +55,10 @@ import android.widget.Toast;
  * Activity which allows the user to create a new event.
  * 
  * @author Tao Qian(taoqian_2015@depauw.edu)
- *
+ * 
  */
 public class NewEventActivity extends LocationAwareActivity implements
-ActionBar.TabListener{
+		ActionBar.TabListener {
 
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -69,7 +69,7 @@ ActionBar.TabListener{
 	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
 	 */
 	SectionsPagerAdapter mSectionsPagerAdapter;
-	
+
 	public static final String TAG = "NewEventActivity";
 
 	public static final double DEFAULT_EVENT_RADIUS = 0.001;// The default
@@ -87,14 +87,16 @@ ActionBar.TabListener{
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_new_event);
-		
-		if (!(mLocationClient.isConnected() || mLocationClient
-				.isConnecting()))
+
+		if (!(mLocationClient.isConnected() || mLocationClient.isConnecting()))
 			mLocationClient.connect();
 	}
+
 	/**
 	 * Initialize the pager used to allow the user to create a new event.
-	 * @param currentLocation the current location of the user, used to initialize the map.
+	 * 
+	 * @param currentLocation
+	 *            the current location of the user, used to initialize the map.
 	 */
 	private void initializeTabs(LatLng currentLocation) {
 		// Set up the action bar.
@@ -104,7 +106,7 @@ ActionBar.TabListener{
 		// Create the adapter that will return a fragment for each of the three
 		// primary sections of the app.
 		mSectionsPagerAdapter = new SectionsPagerAdapter(
-				getSupportFragmentManager(),currentLocation);
+				getSupportFragmentManager(), currentLocation);
 
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -131,7 +133,6 @@ ActionBar.TabListener{
 					.setTabListener(this));
 		}
 	}
-	
 
 	/*
 	 * Initialize the map instance after connected to the Google Play service.
@@ -160,9 +161,13 @@ ActionBar.TabListener{
 		switch (item.getItemId()) {
 		case R.id.action_create_event:
 			final NewEventMapFragment mapFrag = (NewEventMapFragment) getSupportFragmentManager()
-			.findFragmentByTag(Utility.getFragmentTag(R.id.pager, SectionsPagerAdapter.NEW_EVENT_MAP_PAGE));
+					.findFragmentByTag(
+							Utility.getFragmentTag(R.id.pager,
+									SectionsPagerAdapter.NEW_EVENT_MAP_PAGE));
 			NewEventFormFragment formFrag = (NewEventFormFragment) getSupportFragmentManager()
-					.findFragmentByTag(Utility.getFragmentTag(R.id.pager, SectionsPagerAdapter.NEW_EVENT_FORM_PAGE));
+					.findFragmentByTag(
+							Utility.getFragmentTag(R.id.pager,
+									SectionsPagerAdapter.NEW_EVENT_FORM_PAGE));
 
 			// Validate user input.
 			String errorMessage = "";
@@ -191,12 +196,15 @@ ActionBar.TabListener{
 					new SaveCallback() {
 						@Override
 						public void done(ParseException e) {
-							if (e != null)
-							{
-								Log.d(TAG,"Error in creating event:"+e.toString());
-								Toast.makeText(NewEventActivity.this, R.string.connection_error_toast_message, Toast.LENGTH_SHORT).show();
-							}
-							else
+							if (e != null) {
+								Log.d(TAG,
+										"Error in creating event:"
+												+ e.toString());
+								Toast.makeText(
+										NewEventActivity.this,
+										R.string.connection_error_toast_message,
+										Toast.LENGTH_SHORT).show();
+							} else
 								finish();
 							setProgressBarIndeterminateVisibility(false);
 						}
@@ -216,7 +224,6 @@ ActionBar.TabListener{
 		return true;
 	}
 
-
 	@Override
 	public void onTabSelected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
@@ -234,7 +241,7 @@ ActionBar.TabListener{
 	public void onTabReselected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
 	}
-	
+
 	/**
 	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
 	 * one of the sections/tabs/pages.
@@ -243,13 +250,16 @@ ActionBar.TabListener{
 
 		public static final int NEW_EVENT_MAP_PAGE = 0;
 		public static final int NEW_EVENT_FORM_PAGE = 1;
-		
+
 		private LatLng userLocation;
-		
+
 		/**
 		 * Constructor
+		 * 
 		 * @param fm
-		 * @param userLocation the current location of the user, to be passed to the NewEventMapFragment to initialize the map.
+		 * @param userLocation
+		 *            the current location of the user, to be passed to the
+		 *            NewEventMapFragment to initialize the map.
 		 */
 		public SectionsPagerAdapter(FragmentManager fm, LatLng userLocation) {
 			super(fm);
@@ -292,79 +302,89 @@ ActionBar.TabListener{
 	}
 
 	/**
-	 * A MapFragment that allows the user to choose the center and radius of an event.
+	 * A MapFragment that allows the user to choose the center and radius of an
+	 * event.
+	 * 
 	 * @author Tao Qian(taoqian_2015@depauw.edu)
-	 *
+	 * 
 	 */
-	public static class NewEventMapFragment extends SupportMapFragment{
-		
+	public static class NewEventMapFragment extends SupportMapFragment {
+
 		private static final String USER_LOCATION_KEY = "user_location_key";
-		private Marker centerMarker;// The map marker used to indicate the center of the event.
-		private Marker radiusMarker;// The map marker used to indicate the radius of the event.
-		
+		private Marker centerMarker;// The map marker used to indicate the
+									// center of the event.
+		private Marker radiusMarker;// The map marker used to indicate the
+									// radius of the event.
+
 		/**
 		 * Get a new instance
-		 * @param latlng the current location of the user.
-		 * @return 
+		 * 
+		 * @param latlng
+		 *            the current location of the user.
+		 * @return
 		 */
-		public static NewEventMapFragment newInstance(LatLng latlng)
-		{
-			 NewEventMapFragment frag = new NewEventMapFragment();
+		public static NewEventMapFragment newInstance(LatLng latlng) {
+			NewEventMapFragment frag = new NewEventMapFragment();
 
-			    Bundle args = new Bundle();
-			    args.putParcelable(USER_LOCATION_KEY, latlng);
-			    frag.setArguments(args);
-			    return frag;
+			Bundle args = new Bundle();
+			args.putParcelable(USER_LOCATION_KEY, latlng);
+			frag.setArguments(args);
+			return frag;
 		}
 
 		/**
 		 * Get the center position of the event.
-		 * @return 
-		 */
-		public LatLng getCenterPosition()
-		{
-			return centerMarker.getPosition();
-		}
-		
-		/**
-		 * Get the radius of the event in meters.
+		 * 
 		 * @return
 		 */
-		public int  getRadius()
-		{
-			return (int) Utility
-			.distance(centerMarker.getPosition(),
+		public LatLng getCenterPosition() {
+			return centerMarker.getPosition();
+		}
+
+		/**
+		 * Get the radius of the event in meters.
+		 * 
+		 * @return
+		 */
+		public int getRadius() {
+			return (int) Utility.distance(centerMarker.getPosition(),
 					radiusMarker.getPosition());
 		}
-		
+
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View v = super.onCreateView(inflater, container, savedInstanceState);
-			
-			//We initialize the map here.
+			View v = super
+					.onCreateView(inflater, container, savedInstanceState);
+
+			// We initialize the map here.
 			final GoogleMap mMap = getMap();
-			
+
 			// Change the display settings of the map.
 			UiSettings settings = mMap.getUiSettings();
 			settings.setCompassEnabled(true);
 
-			LatLng centerPoint = getArguments().getParcelable(USER_LOCATION_KEY);
-			LatLng radiusPoint = new LatLng(centerPoint.latitude + DEFAULT_EVENT_RADIUS,
-					centerPoint.longitude);
+			LatLng centerPoint = getArguments()
+					.getParcelable(USER_LOCATION_KEY);
+			LatLng radiusPoint = new LatLng(centerPoint.latitude
+					+ DEFAULT_EVENT_RADIUS, centerPoint.longitude);
 
 			// Zoom to the location of the user
 			mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerPoint,
 					LocationAwareActivity.DEFAULT_ZOOM_LEVEL));
-			
+
 			// Create the circle that represents the event area.
-			CircleOptions circleOptions = new CircleOptions().center(centerPoint)
-					.radius(Utility.distance(centerPoint, radiusPoint)) // In meters
-					.strokeWidth((float) 4).strokeColor(LocationAwareActivity.EVENT_AREA_STROKE_COLOR)
+			CircleOptions circleOptions = new CircleOptions()
+					.center(centerPoint)
+					.radius(Utility.distance(centerPoint, radiusPoint))
+					// In meters
+					.strokeWidth((float) 4)
+					.strokeColor(LocationAwareActivity.EVENT_AREA_STROKE_COLOR)
 					.fillColor(LocationAwareActivity.EVENT_AREA_FILL_COLOR);
 			final Circle circle = mMap.addCircle(circleOptions);
 
-			// Create the polyline that indicates the radius when the user is moving
+			// Create the polyline that indicates the radius when the user is
+			// moving
 			// the markers around
 			PolylineOptions polyLineOptions = new PolylineOptions()
 					.add(centerPoint).add(radiusPoint).width((float) 4)
@@ -382,8 +402,9 @@ ActionBar.TabListener{
 			radiusMarker = mMap.addMarker(new MarkerOptions()
 					.draggable(true)
 					.position(radiusPoint)
+					.anchor(0.5f, 0.5f)
 					.icon(BitmapDescriptorFactory
-							.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
+							.fromResource(R.drawable.circle_marker)));
 
 			mMap.setOnMarkerDragListener(new OnMarkerDragListener() {
 
@@ -399,12 +420,13 @@ ActionBar.TabListener{
 				public void onMarkerDragEnd(Marker arg0) {
 					// Update circle, show circle, hide marker
 					circle.setCenter(centerMarker.getPosition());
-					circle.setRadius(Utility.distance(centerMarker.getPosition(),
+					circle.setRadius(Utility.distance(
+							centerMarker.getPosition(),
 							radiusMarker.getPosition()));
 					circle.setVisible(true);
 					line.setVisible(false);
-					mMap.animateCamera(CameraUpdateFactory.newLatLng(centerMarker
-							.getPosition()));
+					mMap.animateCamera(CameraUpdateFactory
+							.newLatLng(centerMarker.getPosition()));
 				}
 
 				@Override
@@ -413,9 +435,9 @@ ActionBar.TabListener{
 				}
 
 				/**
-				 * Update the PolyLine that helps the user visualize the radius when
-				 * moving markers. It changes the two end points to be the location
-				 * of the two markers.
+				 * Update the PolyLine that helps the user visualize the radius
+				 * when moving markers. It changes the two end points to be the
+				 * location of the two markers.
 				 */
 				private void updateLine() {
 					LinkedList<LatLng> l = new LinkedList<LatLng>();
@@ -424,12 +446,12 @@ ActionBar.TabListener{
 					line.setPoints(l);
 				}
 			});
-			
+
 			return v;
 		}
-		
+
 	}
-	
+
 	/**
 	 * Fragment that allows the user to type in the information related to a new
 	 * event.
@@ -521,7 +543,8 @@ ActionBar.TabListener{
 					.findViewById(R.id.datePicker);
 			final TimePicker timePicker = (TimePicker) dialogView
 					.findViewById(R.id.timePicker);
-			datePicker.updateDate(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+			datePicker.updateDate(c.get(Calendar.YEAR), c.get(Calendar.MONTH),
+					c.get(Calendar.DAY_OF_MONTH));
 			timePicker.setCurrentHour(c.get(Calendar.HOUR_OF_DAY));
 			timePicker.setCurrentMinute(c.get(Calendar.MINUTE));
 			datePicker.setCalendarViewShown(false);
@@ -536,7 +559,8 @@ ActionBar.TabListener{
 						public void onClick(DialogInterface dialog, int which) {
 							c.set(Calendar.YEAR, datePicker.getYear());
 							c.set(Calendar.MONTH, datePicker.getMonth());
-							c.set(Calendar.DAY_OF_MONTH, datePicker.getDayOfMonth());
+							c.set(Calendar.DAY_OF_MONTH,
+									datePicker.getDayOfMonth());
 							c.set(Calendar.HOUR_OF_DAY,
 									timePicker.getCurrentHour());
 							c.set(Calendar.MINUTE,

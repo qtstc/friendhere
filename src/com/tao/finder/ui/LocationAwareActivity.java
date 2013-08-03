@@ -17,41 +17,44 @@ import android.util.Log;
 import android.widget.Toast;
 
 /**
- * Base class for activities that uses the Google Play Location service.
- * This class contains the methods that deals with connection failure
- * and a few constants that are used for acquiring location.
+ * Base class for activities that uses the Google Play Location service. This
+ * class contains the methods that deals with connection failure and a few
+ * constants that are used for acquiring location.
  * 
  * The child classes need to deal with the setting up/terminating of connection.
  * 
  * @author Tao Qian(taoqian_2015@depauw.edu)
- *
+ * 
  */
-public abstract class LocationAwareActivity extends FragmentActivity implements GooglePlayServicesClient.ConnectionCallbacks, GooglePlayServicesClient.OnConnectionFailedListener{
+public abstract class LocationAwareActivity extends FragmentActivity implements
+		GooglePlayServicesClient.ConnectionCallbacks,
+		GooglePlayServicesClient.OnConnectionFailedListener {
 
 	public static final String TAG = "LocationAwareActivity";
-	
+
 	public static final int DEFAULT_ZOOM_LEVEL = 15;// The default zoom level of
 	// the map.
 	public static final int EVENT_AREA_STROKE_COLOR = Color.GRAY;
-	public static final int EVENT_AREA_FILL_COLOR = Color.argb(100, 100, 100,100);
-	
+	public static final int EVENT_AREA_FILL_COLOR = Color.argb(100, 100, 100,
+			100);
+
 	// Stores the current instantiation of the location client in this object
 	protected LocationClient mLocationClient;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mLocationClient = new LocationClient(this, this, this);
 	}
-	
-	@Override 
-	public void onResume()
-	{
+
+	@Override
+	public void onResume() {
 		super.onResume();
-		if(!servicesConnected(this))
-			finish();//If not connected to Google Play service, close the activity.
+		if (!servicesConnected(this))
+			finish();// If not connected to Google Play service, close the
+						// activity.
 	}
-	
+
 	/*
 	 * Handle results returned to this Activity by other Activities started with
 	 * startActivityForResult(). In particular, the method onConnectionFailed()
@@ -78,7 +81,10 @@ public abstract class LocationAwareActivity extends FragmentActivity implements 
 				break;
 			// If any other result was returned by Google Play services
 			default:
-				Toast.makeText(this, R.string.location_service_connection_error_toast_message, Toast.LENGTH_SHORT).show();
+				Toast.makeText(
+						this,
+						R.string.location_service_connection_error_toast_message,
+						Toast.LENGTH_SHORT).show();
 				finish();
 				// Log the result
 				Log.d(TAG, "requestCode:" + getString(R.string.no_resolution));
@@ -87,7 +93,9 @@ public abstract class LocationAwareActivity extends FragmentActivity implements 
 
 			// If any other request code was received
 		default:
-			Toast.makeText(this, R.string.location_service_connection_error_toast_message, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this,
+					R.string.location_service_connection_error_toast_message,
+					Toast.LENGTH_SHORT).show();
 			finish();
 			// Report that this Activity received an unknown requestCode
 			Log.d(TAG,
@@ -97,7 +105,7 @@ public abstract class LocationAwareActivity extends FragmentActivity implements 
 			break;
 		}
 	}
-	
+
 	@Override
 	public void onConnectionFailed(ConnectionResult connectionResult) {
 		/*
@@ -119,20 +127,25 @@ public abstract class LocationAwareActivity extends FragmentActivity implements 
 				 */
 
 			} catch (IntentSender.SendIntentException e) {
-				Toast.makeText(this, R.string.location_service_connection_error_toast_message, Toast.LENGTH_SHORT).show();
-				finish();//Close the activity.
+				Toast.makeText(
+						this,
+						R.string.location_service_connection_error_toast_message,
+						Toast.LENGTH_SHORT).show();
+				finish();// Close the activity.
 				// Log the error
 				e.printStackTrace();
 			}
 		} else {
-			Toast.makeText(this, R.string.location_service_connection_error_toast_message, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this,
+					R.string.location_service_connection_error_toast_message,
+					Toast.LENGTH_SHORT).show();
 			finish();
 			// If no resolution is available, display a dialog to the user with
 			// the error;
 			Log.d(TAG, "onConnectionFailed:no resolution");
 		}
 	}
-	
+
 	@Override
 	public void onConnected(Bundle arg0) {
 		Log.d(TAG, "Connected location client");
@@ -142,8 +155,7 @@ public abstract class LocationAwareActivity extends FragmentActivity implements 
 	public void onDisconnected() {
 		Log.d(TAG, "Disconnected location client");
 	}
-	
-	
+
 	/**
 	 * Verify that Google Play services is available before making a request.
 	 * 
@@ -160,26 +172,28 @@ public abstract class LocationAwareActivity extends FragmentActivity implements 
 			return true;
 			// Google Play services was not available for some reason
 		} else {
-			Toast.makeText(c, R.string.google_play_service_connection_error_toast_message, Toast.LENGTH_SHORT).show();
+			Toast.makeText(
+					c,
+					R.string.google_play_service_connection_error_toast_message,
+					Toast.LENGTH_SHORT).show();
 			return false;
 		}
 	}
-	
+
 	/*
 	 * Define a request code to send to Google Play services This code is
 	 * returned in Activity.onActivityResult
 	 */
 	public static final int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
-	
 	/*
 	 * Constants for location update parameters
 	 */
 	// Milliseconds per second
 	public static final int MILLISECONDS_PER_SECOND = 1000;
 
-	//Constants used for periodical location updates.
-	
+	// Constants used for periodical location updates.
+
 	// The update interval
 	public static final int UPDATE_INTERVAL_IN_SECONDS = 5;
 	// A fast interval ceiling
@@ -191,7 +205,6 @@ public abstract class LocationAwareActivity extends FragmentActivity implements 
 	public static final long FAST_INTERVAL_CEILING_IN_MILLISECONDS = MILLISECONDS_PER_SECOND
 			* FAST_CEILING_IN_SECONDS;
 
-	
 	// Create an empty string for initializing strings
 	public static final String EMPTY_STRING = new String();
 }

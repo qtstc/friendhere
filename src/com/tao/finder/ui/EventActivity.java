@@ -59,12 +59,11 @@ import android.widget.Toast;
  */
 public class EventActivity extends LocationAwareActivity implements
 		ActionBar.TabListener, OnSearchListener {
-	
-	
+
 	public final static String TAG = "EventActivity";
 
 	private boolean fragmentLoaded;
-	
+
 	private ParseObject event;
 	private ParseObject checkin;
 	private SchedulerManager manager;
@@ -90,21 +89,25 @@ public class EventActivity extends LocationAwareActivity implements
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_event);
-		
+
 		setProgressBarIndeterminateVisibility(true);
 		manager = new SchedulerManager(this);
-		//Load the data from the server.
-		String objectId = getIntent().getStringExtra(SearchListFragment.OBJECT_ID);
+		// Load the data from the server.
+		String objectId = getIntent().getStringExtra(
+				SearchListFragment.OBJECT_ID);
 		// If the intent is sent from EventListActivity with an object id.
 		if (objectId != null) {
 			ParseContract.Event.getEventById(objectId,
 					new GetCallback<ParseObject>() {
 
 						@Override
-						public void done(final ParseObject object, ParseException e) {
-							if(e != null)
-							{
-								Toast.makeText(EventActivity.this, R.string.connection_error_toast_message, Toast.LENGTH_SHORT).show();
+						public void done(final ParseObject object,
+								ParseException e) {
+							if (e != null) {
+								Toast.makeText(
+										EventActivity.this,
+										R.string.connection_error_toast_message,
+										Toast.LENGTH_SHORT).show();
 								finish();
 								return;
 							}
@@ -113,26 +116,33 @@ public class EventActivity extends LocationAwareActivity implements
 								checkin = null;
 								return;
 							}
-							ParseContract.Checkin.getCheckin(ParseUser.getCurrentUser(), event,
+							ParseContract.Checkin.getCheckin(
+									ParseUser.getCurrentUser(), event,
 									new FindCallback<ParseObject>() {
 
 										@Override
-										public void done(List<ParseObject> objects,
+										public void done(
+												List<ParseObject> objects,
 												ParseException e) {
-											if(e != null)
-											{
-												Toast.makeText(EventActivity.this, R.string.connection_error_toast_message, Toast.LENGTH_SHORT).show();
+											if (e != null) {
+												Toast.makeText(
+														EventActivity.this,
+														R.string.connection_error_toast_message,
+														Toast.LENGTH_SHORT)
+														.show();
 												finish();
 												return;
 											}
-											
+
 											if (objects.size() == 0)
 												checkin = null;
 											else {
 												checkin = objects.get(0);
 											}
-											//Start initialize the GUI here, after loading all the data.
-											setTitle(event.getString(ParseContract.Event.NAME));
+											// Start initialize the GUI here,
+											// after loading all the data.
+											setTitle(event
+													.getString(ParseContract.Event.NAME));
 											initializeTabs();
 											fragmentLoaded = true;
 											invalidateOptionsMenu();
@@ -143,18 +153,18 @@ public class EventActivity extends LocationAwareActivity implements
 						}
 					});
 		}
-		
+
 	}
 
 	@Override
 	public void onConnected(Bundle arg0) {
 		super.onConnected(arg0);
-		if(ParseUser.getCurrentUser() == null)//If not logged in, return.
+		if (ParseUser.getCurrentUser() == null)// If not logged in, return.
 			return;
-		if(checkin == null)//If not checkedin
+		if (checkin == null)// If not checkedin
 			mLocationClient.removeLocationUpdates(getLocationUpdateIntent());
 		else
-			Log.e(TAG,"Error: checkin is not null in onConnecred.");
+			Log.e(TAG, "Error: checkin is not null in onConnecred.");
 	}
 
 	@Override
@@ -218,15 +228,15 @@ public class EventActivity extends LocationAwareActivity implements
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		if(!fragmentLoaded)
+		if (!fragmentLoaded)
 			return true;
-		
+
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.event, menu);
-		
+
 		// Change the text displayed depending on the settings
 		MenuItem checkinItem = menu.findItem(R.id.action_checkin);
-		
+
 		if (checkin == null)
 			checkinItem.setTitle(getString(R.string.action_check_in));
 		else
@@ -245,7 +255,7 @@ public class EventActivity extends LocationAwareActivity implements
 	public boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_checkin:
-			if(!isLoggedin())//Return if the user is not logged in.
+			if (!isLoggedin())// Return if the user is not logged in.
 				return true;
 			setProgressBarIndeterminateVisibility(true);
 			item.setEnabled(false);
@@ -259,27 +269,36 @@ public class EventActivity extends LocationAwareActivity implements
 							public void done(ParseException e) {
 								setProgressBarIndeterminateVisibility(false);
 								item.setEnabled(true);
-								if(e != null)
-								{
+								if (e != null) {
 									checkin = null;
-									Toast.makeText(EventActivity.this, R.string.connection_error_toast_message, Toast.LENGTH_SHORT).show();
+									Toast.makeText(
+											EventActivity.this,
+											R.string.connection_error_toast_message,
+											Toast.LENGTH_SHORT).show();
 									return;
 								}
-								
+
 								item.setTitle(getString(R.string.action_check_out));
-								//Add a scheduler for this event.
-								//If the event is already started, the scheduler will be invoked immediately to start the location updater.
-								manager.addScheduler(event.getObjectId(),event.getDate(ParseContract.Event.STARTING_TIME), event.getDate(ParseContract.Event.ENDING_TIME));
+								// Add a scheduler for this event.
+								// If the event is already started, the
+								// scheduler will be invoked immediately to
+								// start the location updater.
+								manager.addScheduler(
+										event.getObjectId(),
+										event.getDate(ParseContract.Event.STARTING_TIME),
+										event.getDate(ParseContract.Event.ENDING_TIME));
 							}
 						});
 				return true;
 			}
 			// Else if the user is checked in, check him out and terminate the
 			// location updater.
-			
-			//First clear the result of search list.
+
+			// First clear the result of search list.
 			PersonSearchFragment frag = (PersonSearchFragment) getSupportFragmentManager()
-					.findFragmentByTag(Utility.getFragmentTag(R.id.pager, SectionsPagerAdapter.PERSON_SEARCH_PAGE));
+					.findFragmentByTag(
+							Utility.getFragmentTag(R.id.pager,
+									SectionsPagerAdapter.PERSON_SEARCH_PAGE));
 			frag.clearResults();
 			ParseContract.Checkin.checkOut(checkin, new DeleteCallback() {
 
@@ -287,22 +306,26 @@ public class EventActivity extends LocationAwareActivity implements
 				public void done(ParseException e) {
 					setProgressBarIndeterminateVisibility(false);
 					item.setEnabled(true);
-					if(e != null)
-					{
-						Toast.makeText(EventActivity.this, R.string.connection_error_toast_message, Toast.LENGTH_SHORT).show();
+					if (e != null) {
+						Toast.makeText(EventActivity.this,
+								R.string.connection_error_toast_message,
+								Toast.LENGTH_SHORT).show();
 						return;
 					}
-					
+
 					item.setTitle(getString(R.string.action_check_in));
 					checkin = null;
-					
-					boolean shouldBeUpdating = manager.removeScheduler(event.getObjectId());//First remove the scheduler.
-					if(shouldBeUpdating)
+
+					boolean shouldBeUpdating = manager.removeScheduler(event
+							.getObjectId());// First remove the scheduler.
+					if (shouldBeUpdating)
 						return;
-					if(!mLocationClient.isConnected() && !mLocationClient.isConnecting())
+					if (!mLocationClient.isConnected()
+							&& !mLocationClient.isConnecting())
 						mLocationClient.connect();
-					else if(mLocationClient.isConnected())
-						mLocationClient.removeLocationUpdates(getLocationUpdateIntent());
+					else if (mLocationClient.isConnected())
+						mLocationClient
+								.removeLocationUpdates(getLocationUpdateIntent());
 				}
 			});
 			break;
@@ -337,7 +360,7 @@ public class EventActivity extends LocationAwareActivity implements
 
 		public static final int EVENT_INFO_PAGE = 0;
 		public static final int PERSON_SEARCH_PAGE = 1;
-		
+
 		ParseObject event;
 
 		public SectionsPagerAdapter(FragmentManager fm, ParseObject event) {
@@ -383,7 +406,7 @@ public class EventActivity extends LocationAwareActivity implements
 	}
 
 	public static class EventInfoFragment extends Fragment {
-		
+
 		private static final String STARTING_TIME_KEY = "starting_time_key";
 		private static final String ENDING_TIME_KEY = "ending_time_key";
 		private static final String DESCRIPTION_KEY = "description_key";
@@ -466,9 +489,11 @@ public class EventActivity extends LocationAwareActivity implements
 	 *            the intent sent to this activity.
 	 */
 	private void handleIntent(Intent intent) {
-		if(!isLoggedin())//Return if the user is using search && the user is not logged in.
+		if (!isLoggedin())// Return if the user is using search && the user is
+							// not logged in.
 			return;
-		else if(!isCheckedIn())//If the user is logged in but did not check in, notify him with a toast
+		else if (!isCheckedIn())// If the user is logged in but did not check
+								// in, notify him with a toast
 			return;
 
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
@@ -476,59 +501,63 @@ public class EventActivity extends LocationAwareActivity implements
 					.trim();
 			// use the query to search data
 			PersonSearchFragment frag = (PersonSearchFragment) getSupportFragmentManager()
-					.findFragmentByTag(Utility.getFragmentTag(R.id.pager, SectionsPagerAdapter.PERSON_SEARCH_PAGE));
+					.findFragmentByTag(
+							Utility.getFragmentTag(R.id.pager,
+									SectionsPagerAdapter.PERSON_SEARCH_PAGE));
 			frag.newSearch(searchString, event.getObjectId());
 			// Adds the current search to the search history.
 			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(
 					this, SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
 			suggestions.saveRecentQuery(searchString, null);
-			
-			//Switch to the search page.
+
+			// Switch to the search page.
 			mViewPager.setCurrentItem(1);
 		}
 	}
 
 	/**
-	 * Check whether the user is logged in.
-	 * If not, a dialog requesting the user to log in will be shown.
+	 * Check whether the user is logged in. If not, a dialog requesting the user
+	 * to log in will be shown.
+	 * 
 	 * @return true if the user is logged in, false otherwise.
 	 */
-	private boolean isLoggedin()
-	{
-		if(ParseUser.getCurrentUser() != null)
+	private boolean isLoggedin() {
+		if (ParseUser.getCurrentUser() != null)
 			return true;
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
 		builder.setMessage(R.string.request_login_dialog_message);
 		builder.setNegativeButton(R.string.cancel, null);
-		builder.setPositiveButton(R.string.ok,new OnClickListener() {
-			
+		builder.setPositiveButton(R.string.ok, new OnClickListener() {
+
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				Intent i = new Intent(EventActivity.this, SettingsActivity.class);
+				Intent i = new Intent(EventActivity.this,
+						SettingsActivity.class);
 				startActivity(i);
 			}
 		});
-		
+
 		AlertDialog dialog = builder.create();
 		dialog.show();
 		return false;
 	}
-	
+
 	/**
-	 * Check whether the user is checked in.
-	 * Display a toast message if he is not.
+	 * Check whether the user is checked in. Display a toast message if he is
+	 * not.
+	 * 
 	 * @return true if the user is checked in.
 	 */
-	private boolean isCheckedIn()
-	{
-		if(checkin != null)
+	private boolean isCheckedIn() {
+		if (checkin != null)
 			return true;
-		Toast.makeText(this, R.string.request_checkin_toast_message, Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, R.string.request_checkin_toast_message,
+				Toast.LENGTH_SHORT).show();
 		return false;
 	}
-	
+
 	@Override
 	protected void onNewIntent(Intent intent) {
 		handleIntent(intent);

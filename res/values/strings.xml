@@ -54,4 +54,6 @@
         Received an unknown activity request code %1$d in onActivityResult.
     </string>
     
+    <string name="location_update_scheduler_scheme">event_object_id:</string>
+    
 </resources>

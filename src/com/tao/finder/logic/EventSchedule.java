@@ -12,10 +12,9 @@ import android.preference.PreferenceManager;
 public class EventSchedule {
 	
 	public static final String EVENT_SCHEDULE_SHAREDPREFERENCES_KEY = "starting_time_sharedpreferences_key";
-	public static final String DELIMS = "'";
+	private static final String DELIMS = "'";
 	
 	private HashMap<String, EventTime> events;
-	
 	
 	private EventSchedule()
 	{
@@ -28,7 +27,7 @@ public class EventSchedule {
 		sp.edit().putString(EVENT_SCHEDULE_SHAREDPREFERENCES_KEY, toString()).commit();
 	}
 	
-	public EventSchedule getInstance(Context c)
+	public static EventSchedule getInstance(Context c)
 	{
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
 		String s = sp.getString(EVENT_SCHEDULE_SHAREDPREFERENCES_KEY, "");
@@ -37,11 +36,15 @@ public class EventSchedule {
 		StringTokenizer st = new StringTokenizer(s);
 		
 		EventSchedule schedule = new EventSchedule();
+		
+		long currentTime = Calendar.getInstance().getTimeInMillis();
 		while(st.hasMoreTokens())
 		{
 			String next = st.nextToken(DELIMS);
 			EventTime et = new EventTime();
-			schedule.add(EventTime.parseEventTimeFromString(next, et),et);
+			String name = EventTime.parseEventTimeFromString(next, et);//Parse instance from string
+			if(et.getEnding()>currentTime)//We only care about the events that haven't ended.
+				schedule.add(name,et);
 		}
 		return schedule;
 	}
@@ -51,17 +54,28 @@ public class EventSchedule {
 		events.put(id, et);
 	}
 	
+	public void remove(String id)
+	{
+		events.remove(id);
+	}
+	
 	/**
 	 * Determine whether the updater should be started depending
 	 * on the current time.
 	 * @return true if the updater should be started.
 	 */
-	public boolean shouldStartUpdater()
+	public boolean shouldStartUpdater(String currentEventID,boolean isStarting)
 	{
 		long currentTime = Calendar.getInstance().getTimeInMillis();
 		int count = 0;
+		//If the scheduler is triggered to at the beginning of an event.
+		if(isStarting)
+			return true;
 		for(Entry<String,EventTime> e:events.entrySet())
 		{
+			//Consider the current event separately.
+			if(currentEventID.equals(e.getKey()))
+				continue;
 			EventTime et = e.getValue();
 			if(et.starting < currentTime)
 				count++;

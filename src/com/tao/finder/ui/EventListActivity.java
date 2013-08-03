@@ -49,10 +49,6 @@ public class EventListActivity extends FragmentActivity implements
 
 	public final static String TAG = "EventListActivity";
 	
-	private LocationUpdateScheduler scheduler;
-	private PendingIntent pi;
-	private AlarmManager am;
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

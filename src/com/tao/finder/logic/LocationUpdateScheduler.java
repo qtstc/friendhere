@@ -1,5 +1,7 @@
 package com.tao.finder.logic;
 
+import java.util.StringTokenizer;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
@@ -9,15 +11,15 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class LocationUpdateScheduler extends BroadcastReceiver implements GooglePlayServicesClient.ConnectionCallbacks, GooglePlayServicesClient.OnConnectionFailedListener{
 
 	
-	Context c;
+	private Context c;
+	private String eventObjectID;
+	private boolean isStarting;
 	
 	// A request to connect to Location Services
 	private LocationRequest mLocationRequest;
@@ -43,14 +45,23 @@ public class LocationUpdateScheduler extends BroadcastReceiver implements Google
 	}
 	
 	@Override
-	public void onReceive(Context arg0, Intent arg1) {
-		Log.e("Broadcast recerver triggered","haha");
+	public void onReceive(Context arg0, Intent intent) {
+		//Parse the URI
+		String data = intent.getData().getSchemeSpecificPart();
+		StringTokenizer st = new StringTokenizer(data);
+		eventObjectID = st.nextToken(SchedulerManager.DELIMS);
+		String suffix = st.nextToken(SchedulerManager.DELIMS);
+		if(suffix.equals(SchedulerManager.STARTING_SUFFIX))
+			isStarting = true;
+		else 
+			isStarting = false;
+		
+		Log.e("LocationUpdateScheduler",data);
+		
 		c = arg0;
 		mLocationClient = new LocationClient(c, this, this);
 		initializeLocationRequest();
-		//mLocationClient.connect();
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
-		Log.e("Got string!",sp.getString("ss", "default value"));
+		mLocationClient.connect();
 	}
 
 	@Override
@@ -61,10 +72,12 @@ public class LocationUpdateScheduler extends BroadcastReceiver implements Google
 
 	@Override
 	public void onConnected(Bundle arg0) {
-		Log.e("Connected to location service!","yea!");
-		//mLocationClient.requestLocationUpdates(
-				//mLocationRequest, getLocationUpdateIntent());
-		mLocationClient.removeLocationUpdates(getLocationUpdateIntent());
+		Log.e("Connected to location service!",eventObjectID);
+		EventSchedule schedule = EventSchedule.getInstance(c);
+		if(schedule.shouldStartUpdater(eventObjectID,isStarting))
+			mLocationClient.requestLocationUpdates(mLocationRequest, getLocationUpdateIntent());
+		else
+			mLocationClient.removeLocationUpdates(getLocationUpdateIntent());
 	}
 	
 	private PendingIntent getLocationUpdateIntent() {

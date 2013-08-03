@@ -44,10 +44,10 @@ public class BackgroundLocationUpdater extends IntentService {
 				}
 				catch(ParseException e)
 				{
-					Log.d("Failed","Update failed");
+					Log.e("Failed","Update failed");
 				}
 			}
-			Log.d("Background Receiver",
+			Log.e("Background Receiver",
 					"onHandleIntent " + location.getLatitude() + ","
 							+ location.getLongitude());
 		}

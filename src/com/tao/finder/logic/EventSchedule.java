@@ -9,9 +9,21 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+/**
+ * A data structure used to store the schedule of events
+ * in the phone storage.
+ * 
+ * In the current implementation, data is converted to a string 
+ * and then stored in the SharedPreferences.
+ * 
+ * @author Tao Qian(taoqian_2015@depauw.edu)
+ *
+ */
 public class EventSchedule {
 	
+	//The key used by the SharedPreferences to store data.
 	public static final String EVENT_SCHEDULE_SHAREDPREFERENCES_KEY = "starting_time_sharedpreferences_key";
+	//Delimiter used to separate different events in the string representation of this data structure
 	private static final String DELIMS = "'";
 	
 	private HashMap<String, EventTime> events;
@@ -21,18 +33,31 @@ public class EventSchedule {
 		events = new HashMap<String, EventSchedule.EventTime>();
 	}
 	
+	/**
+	 * Save the data to the SharedPreferences.
+	 * 
+	 * @param c
+	 */
 	public void save(Context c)
 	{
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
 		sp.edit().putString(EVENT_SCHEDULE_SHAREDPREFERENCES_KEY, toString()).commit();
 	}
 	
+	/**
+	 * Load existing instance from the SharedPreferences
+	 * or create a new one if nothing exists.
+	 * @param c
+	 * @return a EventSchedule instance
+	 */
 	public static EventSchedule getInstance(Context c)
 	{
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
 		String s = sp.getString(EVENT_SCHEDULE_SHAREDPREFERENCES_KEY, "");
-		if(s.equals(""))
+		if(s.equals(""))//If no existing one is found.
 			return new EventSchedule();
+		
+		//Parse the string representation.
 		StringTokenizer st = new StringTokenizer(s);
 		
 		EventSchedule schedule = new EventSchedule();
@@ -49,22 +74,39 @@ public class EventSchedule {
 		return schedule;
 	}
 	
+	/**
+	 * Add a new event to the schedule.
+	 * 
+	 * @param id the objectID of the event, as used by Parse.com
+	 * @param et the EventTime instance associated with this event
+	 */
 	public void add(String id, EventTime et)
 	{
 		events.put(id, et);
 	}
 	
+	/**
+	 * Remove an event from the schedule.
+	 * It's safe to call this method even 
+	 * when the event is already removed.
+	 * 
+	 * @param id the objectID of the event, as used by Parse.com
+	 */
 	public void remove(String id)
 	{
 		events.remove(id);
 	}
 	
 	/**
-	 * Determine whether the updater should be started depending
-	 * on the current time.
-	 * @return true if the updater should be started.
+	 * Determine whether the updater should be started based on the 
+	 * event schedule. 
+	 * This method is to be called by an LocationUpdateScheduler instance
+	 * 
+	 * @param currentEventID the objectId of the event that invoked the LocationUpdateScheduler instance
+	 * @param isStarting true if the LocationUpdateScheduler is invoked at the beginning of the event.
+	 * @return true if the updater be running.
 	 */
-	public boolean shouldStartUpdater(String currentEventID,boolean isStarting)
+	public boolean shouldBeUpdating(String currentEventID,boolean isStarting)
 	{
 		long currentTime = Calendar.getInstance().getTimeInMillis();
 		int count = 0;
@@ -97,6 +139,13 @@ public class EventSchedule {
 		return sb.toString();
 	}
 	
+	/**
+	 * A data structure used to store the start and ending time
+	 * of individual events.
+	 * It is used in the EventSchedule.
+	 * @author Tao Qian(taoqian_2015@depauw.edu)
+	 *
+	 */
 	public static class EventTime
 	{
 		private long starting;

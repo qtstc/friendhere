@@ -20,6 +20,7 @@ import com.parse.SaveCallback;
 import com.tao.finder.R;
 import com.tao.finder.logic.BackgroundLocationUpdater;
 import com.tao.finder.logic.ParseContract;
+import com.tao.finder.logic.SchedulerManager;
 import com.tao.finder.logic.SuggestionProvider;
 import com.tao.finder.logic.Utility;
 import com.tao.finder.ui.SearchListFragment.OnSearchListener;
@@ -39,6 +40,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -62,13 +64,11 @@ public class EventActivity extends LocationAwareActivity implements
 	
 	public final static String TAG = "EventActivity";
 
-	// A request to connect to Location Services
-	private LocationRequest mLocationRequest;
-
 	private boolean fragmentLoaded;
 	
-	ParseObject event;
-	ParseObject checkin;
+	private ParseObject event;
+	private ParseObject checkin;
+	private SchedulerManager manager;
 
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -91,9 +91,9 @@ public class EventActivity extends LocationAwareActivity implements
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_event);
-		initializeLocationRequest();
 		
 		setProgressBarIndeterminateVisibility(true);
+		manager = new SchedulerManager(this);
 		//Load the data from the server.
 		String objectId = getIntent().getStringExtra(SearchListFragment.OBJECT_ID);
 		// If the intent is sent from EventListActivity with an object id.
@@ -147,24 +147,6 @@ public class EventActivity extends LocationAwareActivity implements
 		
 	}
 
-	/**
-	 * Initialize the location location request instance used for periodical
-	 * updates.
-	 */
-	private void initializeLocationRequest() {
-		// Create a new global location parameters object
-		mLocationRequest = LocationRequest.create();
-		// Set the update interval
-		mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
-
-		// Use high accuracy
-		mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-		// Set the interval ceiling to one minute
-		mLocationRequest
-				.setFastestInterval(FAST_INTERVAL_CEILING_IN_MILLISECONDS);
-	}
-
 	@Override
 	public void onConnected(Bundle arg0) {
 		super.onConnected(arg0);
@@ -173,8 +155,7 @@ public class EventActivity extends LocationAwareActivity implements
 		if(checkin == null)//If not checkedin
 			mLocationClient.removeLocationUpdates(getLocationUpdateIntent());
 		else
-			mLocationClient.requestLocationUpdates(
-					mLocationRequest, getLocationUpdateIntent());	
+			Log.e(TAG,"Error: checkin is not null in onConnecred.");
 	}
 
 	@Override
@@ -287,12 +268,9 @@ public class EventActivity extends LocationAwareActivity implements
 								}
 								
 								item.setTitle(getString(R.string.action_check_out));
-								
-								if(!mLocationClient.isConnected() && !mLocationClient.isConnecting())
-									mLocationClient.connect();
-								else if(mLocationClient.isConnected())
-									mLocationClient.requestLocationUpdates(
-										mLocationRequest, getLocationUpdateIntent());
+								//Add a scheduler for this event.
+								//If the event is already started, the scheduler will be invoked immediately to start the location updater.
+								manager.addScheduler(event.getObjectId(),event.getDate(ParseContract.Event.STARTING_TIME), event.getDate(ParseContract.Event.ENDING_TIME));
 							}
 						});
 				return true;
@@ -318,7 +296,10 @@ public class EventActivity extends LocationAwareActivity implements
 					
 					item.setTitle(getString(R.string.action_check_in));
 					checkin = null;
-			
+					
+					boolean shouldBeUpdating = manager.removeScheduler(event.getObjectId());//First remove the scheduler.
+					if(shouldBeUpdating)
+						return;
 					if(!mLocationClient.isConnected() && !mLocationClient.isConnecting())
 						mLocationClient.connect();
 					else if(mLocationClient.isConnected())

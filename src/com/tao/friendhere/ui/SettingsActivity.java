@@ -1,4 +1,4 @@
-package com.tao.finder.ui;
+package com.tao.friendhere.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
@@ -23,8 +23,8 @@ import com.parse.ParseFacebookUtils;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.parse.ParseFacebookUtils.Permissions;
-import com.tao.finder.R;
-import com.tao.finder.logic.ParseContract;
+import com.tao.friendhere.R;
+import com.tao.friendhere.logic.ParseContract;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings.
@@ -53,7 +53,10 @@ public class SettingsActivity extends PreferenceActivity {
 						}
 					});
 		else
+		{
 			setupSimplePreferencesScreen();
+			setProgressBarIndeterminateVisibility(false);
+		}
 	}
 
 	/**

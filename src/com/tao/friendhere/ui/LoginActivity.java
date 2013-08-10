@@ -1,4 +1,4 @@
-package com.tao.finder.ui;
+package com.tao.friendhere.ui;
 
 import java.util.Arrays;
 
@@ -11,7 +11,7 @@ import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
 import com.parse.ParseFacebookUtils.Permissions;
 import com.parse.ParseUser;
-import com.tao.finder.R;
+import com.tao.friendhere.R;
 
 import android.os.Bundle;
 import android.app.Activity;

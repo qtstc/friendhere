@@ -1,4 +1,4 @@
-package com.tao.finder.ui;
+package com.tao.friendhere.ui;
 
 import java.util.List;
 import java.util.Locale;
@@ -16,13 +16,13 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
-import com.tao.finder.R;
-import com.tao.finder.logic.BackgroundLocationUpdater;
-import com.tao.finder.logic.ParseContract;
-import com.tao.finder.logic.SchedulerManager;
-import com.tao.finder.logic.SuggestionProvider;
-import com.tao.finder.logic.Utility;
-import com.tao.finder.ui.SearchListFragment.OnSearchListener;
+import com.tao.friendhere.R;
+import com.tao.friendhere.logic.BackgroundLocationUpdater;
+import com.tao.friendhere.logic.ParseContract;
+import com.tao.friendhere.logic.SchedulerManager;
+import com.tao.friendhere.logic.SuggestionProvider;
+import com.tao.friendhere.logic.Utility;
+import com.tao.friendhere.ui.SearchListFragment.OnSearchListener;
 
 import android.app.ActionBar;
 import android.app.AlertDialog;
@@ -114,8 +114,9 @@ public class EventActivity extends LocationAwareActivity implements
 							event = object;
 							if (ParseUser.getCurrentUser() == null) {
 								checkin = null;
-								return;
 							}
+							else
+							{
 							ParseContract.Checkin.getCheckin(
 									ParseUser.getCurrentUser(), event,
 									new FindCallback<ParseObject>() {
@@ -139,17 +140,17 @@ public class EventActivity extends LocationAwareActivity implements
 											else {
 												checkin = objects.get(0);
 											}
-											// Start initialize the GUI here,
-											// after loading all the data.
-											setTitle(event
-													.getString(ParseContract.Event.NAME));
-											initializeTabs();
-											fragmentLoaded = true;
-											invalidateOptionsMenu();
-											setProgressBarIndeterminateVisibility(false);
 										}
 									});
-							return;
+							}
+							// Start initialize the GUI here,
+							// after loading all the data.
+							setTitle(event
+									.getString(ParseContract.Event.NAME));
+							initializeTabs();
+							fragmentLoaded = true;
+							invalidateOptionsMenu();
+							setProgressBarIndeterminateVisibility(false);
 						}
 					});
 		}

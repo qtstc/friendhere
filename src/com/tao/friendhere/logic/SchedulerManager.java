@@ -1,10 +1,10 @@
-package com.tao.finder.logic;
+package com.tao.friendhere.logic;
 
 import java.util.Calendar;
 import java.util.Date;
 
-import com.tao.finder.R;
-import com.tao.finder.logic.EventSchedule.EventTime;
+import com.tao.friendhere.R;
+import com.tao.friendhere.logic.EventSchedule.EventTime;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;

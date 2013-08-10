@@ -10,7 +10,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".EventListActivity" >
     
- <fragment android:name="com.tao.finder.ui.EventSearchFragment"
+ <fragment android:name="com.tao.friendhere.ui.EventSearchFragment"
               android:id="@+id/event_search_fragment"
               android:layout_width="match_parent"
               android:layout_height="match_parent" />

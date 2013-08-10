@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.tao.finder.logic;
+package com.tao.friendhere.logic;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.tao.finder.ui;
+package com.tao.friendhere.ui;
 
 import android.content.Context;
 import android.support.v4.view.ViewPager;

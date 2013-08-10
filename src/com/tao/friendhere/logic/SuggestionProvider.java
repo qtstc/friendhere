@@ -1,4 +1,4 @@
-package com.tao.finder.logic;
+package com.tao.friendhere.logic;
 
 import android.content.SearchRecentSuggestionsProvider;
 
@@ -10,7 +10,7 @@ import android.content.SearchRecentSuggestionsProvider;
  * 
  */
 public class SuggestionProvider extends SearchRecentSuggestionsProvider {
-	public final static String AUTHORITY = "com.tao.finder.logic.SuggestionProvider";
+	public final static String AUTHORITY = "com.tao.friendhere.logic.SuggestionProvider";
 	public final static int MODE = DATABASE_MODE_QUERIES;
 
 	public SuggestionProvider() {

@@ -1,4 +1,4 @@
-package com.tao.finder.ui;
+package com.tao.friendhere.ui;
 
 import java.util.Locale;
 import java.util.Timer;
@@ -14,9 +14,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseUser;
-import com.tao.finder.R;
-import com.tao.finder.logic.ParseContract;
-import com.tao.finder.logic.Utility;
+import com.tao.friendhere.R;
+import com.tao.friendhere.logic.ParseContract;
+import com.tao.friendhere.logic.Utility;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;

@@ -1,4 +1,4 @@
-package com.tao.finder.ui;
+package com.tao.friendhere.ui;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -20,9 +20,9 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
-import com.tao.finder.R;
-import com.tao.finder.logic.ParseContract;
-import com.tao.finder.logic.Utility;
+import com.tao.friendhere.R;
+import com.tao.friendhere.logic.ParseContract;
+import com.tao.friendhere.logic.Utility;
 
 import android.app.ActionBar;
 import android.app.AlertDialog;
@@ -141,7 +141,7 @@ public class NewEventActivity extends LocationAwareActivity implements
 	 * to the service.
 	 * 
 	 * @see
-	 * com.tao.finder.ui.LocationAwareActivity#onConnected(android.os.Bundle)
+	 * com.tao.friendhere.ui.LocationAwareActivity#onConnected(android.os.Bundle)
 	 */
 	@Override
 	public void onConnected(Bundle arg0) {

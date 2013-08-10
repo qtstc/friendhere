@@ -4,5 +4,5 @@
         android:label="@string/title_activity_event"
         android:hint="@string/person_search_hint" 
         android:voiceSearchMode="showVoiceSearchButton|launchRecognizer"
-        android:searchSuggestAuthority="com.tao.finder.logic.SuggestionProvider" 
+        android:searchSuggestAuthority="com.tao.friendhere.logic.SuggestionProvider" 
     	android:searchSuggestSelection=" ?"/>

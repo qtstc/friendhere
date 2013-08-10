@@ -1,13 +1,13 @@
-package com.tao.finder.ui;
+package com.tao.friendhere.ui;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import com.parse.Parse;
 import com.parse.ParseFacebookUtils;
-import com.tao.finder.R;
-import com.tao.finder.logic.ParseContract;
-import com.tao.finder.logic.SuggestionProvider;
-import com.tao.finder.ui.SearchListFragment.OnSearchListener;
+import com.tao.friendhere.R;
+import com.tao.friendhere.logic.ParseContract;
+import com.tao.friendhere.logic.SuggestionProvider;
+import com.tao.friendhere.ui.SearchListFragment.OnSearchListener;
 
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -54,7 +54,7 @@ public class EventListActivity extends FragmentActivity implements
 		setContentView(R.layout.activity_event_list);
 
 		handleIntent(getIntent());
-		// getKeyHash();
+		getKeyHash();
 
 		SharedPreferences sp = PreferenceManager
 				.getDefaultSharedPreferences(this);
@@ -71,7 +71,7 @@ public class EventListActivity extends FragmentActivity implements
 	public void getKeyHash() {
 		try {
 			PackageInfo info = getPackageManager().getPackageInfo(
-					"com.tao.finder", PackageManager.GET_SIGNATURES);
+					"com.tao.friendhere", PackageManager.GET_SIGNATURES);
 			for (Signature signature : info.signatures) {
 				MessageDigest md = MessageDigest.getInstance("SHA");
 				md.update(signature.toByteArray());

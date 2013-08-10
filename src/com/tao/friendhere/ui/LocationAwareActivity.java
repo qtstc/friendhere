@@ -1,10 +1,10 @@
-package com.tao.finder.ui;
+package com.tao.friendhere.ui;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.location.LocationClient;
-import com.tao.finder.R;
+import com.tao.friendhere.R;
 
 import android.app.Activity;
 import android.content.Context;

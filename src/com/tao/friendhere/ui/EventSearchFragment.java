@@ -1,4 +1,4 @@
-package com.tao.finder.ui;
+package com.tao.friendhere.ui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +10,9 @@ import com.handmark.pulltorefresh.library.PullToRefreshListView;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
-import com.tao.finder.R;
-import com.tao.finder.logic.EventSearchAdapter;
-import com.tao.finder.logic.ParseContract;
+import com.tao.friendhere.R;
+import com.tao.friendhere.logic.EventSearchAdapter;
+import com.tao.friendhere.logic.ParseContract;
 
 /**
  * Fragment that takes care of the listing of the result of event search.

@@ -1,8 +1,8 @@
-package com.tao.finder.logic;
+package com.tao.friendhere.logic;
 
 import java.util.List;
-import com.parse.ParseObject;
-import com.tao.finder.R;
+import com.parse.ParseUser;
+import com.tao.friendhere.R;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -11,14 +11,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 /**
- * Adapters for searching event(ParseObject).
+ * Adapters for searching person(ParseUser).
  * 
  * @author Tao Qian(taoqian_2015@depauw.edu)
  * 
  */
-public class EventSearchAdapter extends SearchListAdapter<ParseObject> {
+public class PersonSearchAdapter extends SearchListAdapter<ParseUser> {
 
-	public EventSearchAdapter(Context mContext, List<ParseObject> listItems) {
+	public PersonSearchAdapter(Context mContext, List<ParseUser> listItems) {
 		super(mContext, listItems);
 	}
 
@@ -26,25 +26,24 @@ public class EventSearchAdapter extends SearchListAdapter<ParseObject> {
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View row = convertView;
 		ViewHolder holder;
-		ParseObject item = (ParseObject) getItem(position);
+		ParseUser item = getItem(position);
 		if (row == null) {
-			// LayoutInflater inflater = (LayoutInflater)
-			// parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			row = LayoutInflater.from(mContext).inflate(
-					R.layout.event_list_item, parent, false);
+					R.layout.person_list_item, parent, false);
+
 			holder = new ViewHolder();
 			holder.upperText = (TextView) row
-					.findViewById(R.id.event_item_upper_text);
+					.findViewById(R.id.person_item_upper_text);
 			holder.lowerText = (TextView) row
-					.findViewById(R.id.event_item_lower_text);
+					.findViewById(R.id.person_item_lower_text);
 
 			row.setTag(holder);
 		} else {
 			holder = (ViewHolder) row.getTag();
 		}
-		holder.upperText.setText(item.getString(ParseContract.Event.NAME));
-		holder.lowerText.setText(Utility.truncString(
-				item.getString(ParseContract.Event.DESCRIPTION), 15));
+		holder.upperText.setText(item.getString(ParseContract.User.NAME));
+		// TODO: take care of exception when email is empty
+		holder.lowerText.setText(Utility.truncString(item.getEmail(), 15));
 		return row;
 	}
 
@@ -58,5 +57,4 @@ public class EventSearchAdapter extends SearchListAdapter<ParseObject> {
 		TextView upperText;
 		TextView lowerText;
 	}
-
 }

@@ -1,4 +1,4 @@
-package com.tao.finder.logic;
+package com.tao.friendhere.logic;
 
 import com.google.android.gms.location.LocationClient;
 import com.parse.Parse;

@@ -50,9 +50,9 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-/**
+/** 
  * This activity allows the user to view details of an event, search users who
- * are in the same event and check in/out.
+ * are in the same event and check in/out
  * 
  * @author Tao Qian(taoqian_2015@depauw.edu)
  * 

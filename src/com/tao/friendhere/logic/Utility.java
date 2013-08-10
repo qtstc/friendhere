@@ -4,10 +4,18 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.DialogInterface.OnClickListener;
 import android.location.Location;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.parse.ParseGeoPoint;
+import com.parse.ParseUser;
+import com.tao.friendhere.R;
+import com.tao.friendhere.ui.SettingsActivity;
 
 /**
  * Common methods.
@@ -96,5 +104,34 @@ public class Utility {
 	 */
 	public static String dateToString(Date d) {
 		return DATE_FORMAT.format(d);
+	}
+	
+	/**
+	 * Check whether the user is logged in. If not, a dialog requesting the user
+	 * to log in will be shown.
+	 * 
+	 * @return true if the user is logged in, false otherwise.
+	 */
+	public static boolean isLoggedin(final Context c) {
+		if (ParseUser.getCurrentUser() != null)
+			return true;
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(c);
+
+		builder.setMessage(R.string.request_login_dialog_message);
+		builder.setNegativeButton(R.string.cancel, null);
+		builder.setPositiveButton(R.string.ok, new OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				Intent i = new Intent(c,
+						SettingsActivity.class);
+				c.startActivity(i);
+			}
+		});
+
+		AlertDialog dialog = builder.create();
+		dialog.show();
+		return false;
 	}
 }

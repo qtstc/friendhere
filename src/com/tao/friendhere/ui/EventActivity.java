@@ -25,13 +25,10 @@ import com.tao.friendhere.logic.Utility;
 import com.tao.friendhere.ui.SearchListFragment.OnSearchListener;
 
 import android.app.ActionBar;
-import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
@@ -256,7 +253,7 @@ public class EventActivity extends LocationAwareActivity implements
 	public boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_checkin:
-			if (!isLoggedin())// Return if the user is not logged in.
+			if (!Utility.isLoggedin(EventActivity.this))// Return if the user is not logged in.
 				return true;
 			setProgressBarIndeterminateVisibility(true);
 			item.setEnabled(false);
@@ -490,7 +487,7 @@ public class EventActivity extends LocationAwareActivity implements
 	 *            the intent sent to this activity.
 	 */
 	private void handleIntent(Intent intent) {
-		if (!isLoggedin())// Return if the user is using search && the user is
+		if (!Utility.isLoggedin(EventActivity.this))// Return if the user is using search && the user is
 							// not logged in.
 			return;
 		else if (!isCheckedIn())// If the user is logged in but did not check
@@ -514,35 +511,6 @@ public class EventActivity extends LocationAwareActivity implements
 			// Switch to the search page.
 			mViewPager.setCurrentItem(1);
 		}
-	}
-
-	/**
-	 * Check whether the user is logged in. If not, a dialog requesting the user
-	 * to log in will be shown.
-	 * 
-	 * @return true if the user is logged in, false otherwise.
-	 */
-	private boolean isLoggedin() {
-		if (ParseUser.getCurrentUser() != null)
-			return true;
-
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-		builder.setMessage(R.string.request_login_dialog_message);
-		builder.setNegativeButton(R.string.cancel, null);
-		builder.setPositiveButton(R.string.ok, new OnClickListener() {
-
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				Intent i = new Intent(EventActivity.this,
-						SettingsActivity.class);
-				startActivity(i);
-			}
-		});
-
-		AlertDialog dialog = builder.create();
-		dialog.show();
-		return false;
 	}
 
 	/**

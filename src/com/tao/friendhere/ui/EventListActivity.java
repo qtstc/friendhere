@@ -7,15 +7,14 @@ import com.parse.ParseFacebookUtils;
 import com.tao.friendhere.R;
 import com.tao.friendhere.logic.ParseContract;
 import com.tao.friendhere.logic.SuggestionProvider;
+import com.tao.friendhere.logic.Utility;
 import com.tao.friendhere.ui.SearchListFragment.OnSearchListener;
 
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.provider.SearchRecentSuggestions;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -54,12 +53,7 @@ public class EventListActivity extends FragmentActivity implements
 		setContentView(R.layout.activity_event_list);
 
 		handleIntent(getIntent());
-		getKeyHash();
-
-		SharedPreferences sp = PreferenceManager
-				.getDefaultSharedPreferences(this);
-		sp.edit().putString("ss", "hahaasfaf").commit();
-
+		//getKeyHash();
 	}
 
 	/**
@@ -106,7 +100,8 @@ public class EventListActivity extends FragmentActivity implements
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_new_event:// Start NewEventActivity.
-			startActivity(new Intent(this, NewEventActivity.class));
+			if(Utility.isLoggedin(EventListActivity.this))
+				startActivity(new Intent(this, NewEventActivity.class));
 			break;
 		case R.id.action_settings:// Start LoginAcvity.
 			startActivity(new Intent(this, SettingsActivity.class));

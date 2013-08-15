@@ -1,14 +1,13 @@
 package com.tao.friendhere.ui;
 
 import android.content.Intent;
-import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Window;
+import android.widget.Toast;
 
 import java.util.Arrays;
 
@@ -35,14 +34,23 @@ import com.tao.friendhere.logic.ParseContract;
  */
 public class SettingsActivity extends PreferenceActivity {
 
+	public static final String TAG = "SettingsActivity";
+	
+	//A flag that indicates the login is on going,
+	//allow us to ignore additional requests sent by the user.
+	public boolean isWorking;
+	
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		super.onCreate(savedInstanceState);
-
+		isWorking = false;
 		setProgressBarIndeterminateVisibility(true);
 		// First fetch the ParseUser instance.
 		if (ParseUser.getCurrentUser() != null)
+		{
+			isWorking = true;
 			ParseUser.getCurrentUser().fetchInBackground(
 					new GetCallback<ParseUser>() {
 
@@ -50,10 +58,11 @@ public class SettingsActivity extends PreferenceActivity {
 						public void done(ParseUser object, ParseException e) {
 							setupSimplePreferencesScreen();
 							setProgressBarIndeterminateVisibility(false);
+							isWorking = false;
 						}
 					});
-		else
-		{
+		}
+		else {
 			setupSimplePreferencesScreen();
 			setProgressBarIndeterminateVisibility(false);
 		}
@@ -80,28 +89,34 @@ public class SettingsActivity extends PreferenceActivity {
 
 					@Override
 					public boolean onPreferenceClick(Preference preference) {
+						if(isWorking)
+							return true;
+						
 						if (ParseUser.getCurrentUser() == null) {
 							setProgressBarIndeterminateVisibility(true);
-							ParseFacebookUtils.logIn(Arrays.asList(
-									Permissions.User.EMAIL,
-									Permissions.User.BIRTHDAY),
+							ParseFacebookUtils.logIn(
+									Arrays.asList(Permissions.User.EMAIL),
 									SettingsActivity.this, new LogInCallback() {
 										@Override
 										public void done(final ParseUser user,
 												ParseException err) {
 											if (err != null)
-												Log.e("Exce",
-														" " + err.toString());
+											{
+												//Notify the user when error occurs
+												Toast.makeText(SettingsActivity.this, R.string.connection_error_toast_message, Toast.LENGTH_SHORT).show();
+												setProgressBarIndeterminateVisibility(false);
+												return;
+											}
 											if (user == null) {
-												Log.e("MyApp",
-														"Uh oh. The user cancelled the Facebook login.");
+												//User did not grant access to Facebook. Logging in is canceled.
+												setProgressBarIndeterminateVisibility(false);
 												return;
 											} else {
 												if (user.isNew()) {
-													Log.e("MyApp",
+													Log.d(TAG,
 															"User signed up and logged in through Facebook!");
 												} else {
-													Log.e("MyApp",
+													Log.d(TAG,
 															"User logged in through Facebook!");
 												}
 
@@ -114,18 +129,35 @@ public class SettingsActivity extends PreferenceActivity {
 															public void onCompleted(
 																	GraphUser gUser,
 																	Response response) {
+																if(gUser == null)
+																{
+																	//If loading user data from fb failed,cancel login and remove the database entry
+																	ParseFacebookUtils.getSession()
+																	.closeAndClearTokenInformation();
+																	ParseUser.logOut();
+																	user.deleteEventually();
+																	Toast.makeText(SettingsActivity.this, R.string.connection_error_toast_message, Toast.LENGTH_SHORT).show();
+																}
 																if (gUser != null) {
 																	user.put(
 																			ParseContract.User.NAME,
 																			gUser.getName());
-																	// user.put(ParseContract.User.PHONE,
-																	// gUser.get)
+																	// Key as
+																	// listed in
+																	// https://developers.facebook.com/docs/reference/api/user/
+																	Object email = gUser
+																			.getProperty("email");
+																	//If the user has a valid email, add it to the user profile
+																	if(email != null)
+																		user.setEmail((String)email);
 																	user.saveInBackground(new SaveCallback() {
-
 																		@Override
 																		public void done(
 																				ParseException e) {
+																			if(e != null)
+																				user.saveEventually();
 																			setProgressBarIndeterminateVisibility(false);
+																			updateSettingsGUI();
 																		}
 																	});
 																}
@@ -139,8 +171,8 @@ public class SettingsActivity extends PreferenceActivity {
 							ParseFacebookUtils.getSession()
 									.closeAndClearTokenInformation();
 							ParseUser.logOut();
+							updateSettingsGUI();
 						}
-						updateSettingsGUI();
 						return true;
 					}
 				});
@@ -170,7 +202,6 @@ public class SettingsActivity extends PreferenceActivity {
 
 							@Override
 							public void updateParseUser(String newValue) {
-								// TODO Auto-generated method stub
 								ParseUser.getCurrentUser().put(
 										ParseContract.User.PHONE, newValue);
 							}
@@ -196,6 +227,8 @@ public class SettingsActivity extends PreferenceActivity {
 		Preference phone = findPreferenceById(R.string.pref_key_phone);
 		Preference login = findPreferenceById(R.string.pref_key_login);
 
+		if(displayName == null)
+			Log.e(TAG,"Hell, it is null!");
 		// First enable/disable form
 		displayName.setEnabled(loggedIn);
 		email.setEnabled(loggedIn);
@@ -203,22 +236,18 @@ public class SettingsActivity extends PreferenceActivity {
 
 		if (loggedIn) {
 			// Update the GUI.
-			displayName.setSummary(user.getString(ParseContract.User.NAME));
-			email.setSummary(user.getEmail());
-			phone.setSummary(user.getString(ParseContract.User.PHONE));
-			// Save the values to SharedPreference
-			Editor editor = PreferenceManager.getDefaultSharedPreferences(this)
-					.edit();
-			editor.putString(displayName.getKey(),
-					user.getString(ParseContract.User.NAME));
-			editor.putString(email.getKey(), user.getEmail());
-			editor.putString(phone.getKey(),
-					user.getString(ParseContract.User.PHONE));
-			editor.commit();
-
+			if(user.containsKey(ParseContract.User.NAME))
+				displayName.setSummary(user.getString(ParseContract.User.NAME));
+			if(user.getEmail() != null)
+				email.setSummary(user.getEmail());
+			if(user.containsKey(ParseContract.User.PHONE))
+				phone.setSummary(user.getString(ParseContract.User.PHONE));
 			login.setTitle(getString(R.string.logout));
 		} else {
 			login.setTitle(getString(R.string.login));
+			displayName.setSummary("");
+			email.setSummary("");
+			phone.setSummary("");
 		}
 	}
 

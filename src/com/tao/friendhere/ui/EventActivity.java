@@ -137,6 +137,7 @@ public class EventActivity extends LocationAwareActivity implements
 											else {
 												checkin = objects.get(0);
 											}
+											invalidateOptionsMenu();
 										}
 									});
 							}
